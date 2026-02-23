@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shuttle Squad</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24; --border: #2a2a35;
+    --accent: #c8f135; --accent2: #f1c135; --text: #eeeef0; --muted: #6b6b80;
+    --red: #ff4d6d; --green: #4dff9b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; top: -200px; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(200,241,53,0.07) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+  #app { max-width: 520px; margin: 0 auto; padding-bottom: 60px; position: relative; z-index: 1; }
+
+  header { padding: 24px 24px 0; display: flex; align-items: center; }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 2px; color: var(--accent); }
+
+  .nav-tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin: 16px 24px; }
+  .nav-tab { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; color: var(--muted); transition: all 0.2s; border: none; background: transparent; font-family: 'DM Sans', sans-serif; }
+  .nav-tab.active { background: var(--surface2); color: var(--text); }
+
+  .screen { display: none; padding: 0 24px; }
+  .screen.active { display: block; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; margin-bottom: 16px; }
+  .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 1px; color: var(--accent); margin-bottom: 16px; }
+
+  label { font-size: 0.78rem; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px; }
+  input[type="number"], input[type="text"] { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; padding: 12px 16px; outline: none; transition: border 0.2s; margin-bottom: 14px; }
+  input:focus { border-color: var(--accent); }
+  select { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; padding: 12px 16px; outline: none; -webkit-appearance: none; width: 100%; margin-bottom: 14px; }
+  select:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+
+  .player-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .player-input-row { display: flex; align-items: center; gap: 10px; }
+  .player-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+  .player-input-row input { margin-bottom: 0; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 24px; border-radius: 12px; border: none; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.18s; width: 100%; margin-top: 4px; }
+  .btn-primary { background: var(--accent); color: #0d0d0f; }
+  .btn-primary:hover { background: #d4f54a; transform: translateY(-1px); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-sm { padding: 8px 14px; font-size: 0.82rem; width: auto; border-radius: 8px; margin-top: 0; }
+  .btn-danger { background: rgba(255,77,109,0.12); color: var(--red); border: 1px solid rgba(255,77,109,0.3); }
+
+  .match-header { display: flex; align-items: center; justify-content: space-between; margin: 16px 0; }
+  .match-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.9rem; letter-spacing: 2px; }
+  .bet-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; font-size: 0.8rem; color: var(--accent2); font-weight: 600; }
+
+  .players-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; }
+  .pbar-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; }
+  .pbar-list { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pbar-player { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; }
+  .pbar-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .pbar-wins { background: var(--surface2); border-radius: 10px; padding: 1px 7px; font-size: 0.7rem; color: var(--muted); }
+
+  .scoreboard { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .team-card { background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 16px 12px; text-align: center; transition: all 0.25s; }
+  .team-card.winner-highlight { border-color: var(--green); background: rgba(77,255,155,0.05); }
+  .team-card.loser-dim { opacity: 0.35; border-color: var(--red); }
+  .team-label { font-family: 'Bebas Neue', sans-serif; font-size: 0.95rem; letter-spacing: 2px; color: var(--muted); margin-bottom: 10px; }
+  .team-avatars { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+  .player-avatar { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .avatar-circle { width: 44px; height: 44px; border-radius: 50%; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.1); }
+  .avatar-name { font-size: 0.68rem; color: var(--muted); max-width: 50px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vs-text { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--muted); letter-spacing: 2px; text-align: center; }
+
+  .bench-section { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; }
+  .bench-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; }
+  .bench-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .bench-chip { display: flex; align-items: center; gap: 8px; background: var(--surface2); border-radius: 20px; padding: 6px 12px; font-size: 0.83rem; }
+
+  .win-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .win-btn { padding: 14px 10px; border-radius: 12px; border: 2px solid var(--border); background: var(--surface2); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; text-align: center; }
+  .win-btn:hover { border-color: var(--green); color: var(--green); background: rgba(77,255,155,0.07); }
+  .playing-hint { font-size: 0.83rem; color: var(--muted); margin-bottom: 12px; }
+
+  /* PAY PICKER */
+  .pay-picker { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin-bottom: 14px; }
+  .pay-picker-title { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 1px; color: var(--accent2); margin-bottom: 4px; }
+  .pay-picker-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
+  .pay-picker-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .pay-picker-row:last-child { margin-bottom: 0; }
+  .ppr-loser { display: flex; align-items: center; gap: 7px; font-weight: 600; font-size: 0.88rem; min-width: 90px; }
+  .ppr-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; color: #fff; flex-shrink: 0; }
+  .ppr-arrow { color: var(--muted); font-size: 1rem; }
+  .ppr-select { flex: 1; min-width: 110px; background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; padding: 9px 12px; outline: none; margin-bottom: 0; -webkit-appearance: none; }
+  .ppr-select:focus { border-color: var(--accent); }
+  .ppr-amount { background: rgba(200,241,53,0.14); color: var(--accent); padding: 4px 11px; border-radius: 18px; font-weight: 700; font-size: 0.82rem; white-space: nowrap; }
+
+  .bet-result { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin-bottom: 14px; }
+  .bet-result-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 1px; margin-bottom: 6px; color: var(--accent2); }
+  .bet-winner-line { font-size: 0.82rem; color: var(--muted); margin-bottom: 14px; }
+  .payment-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; gap: 8px; }
+  .payment-row:last-child { border-bottom: none; }
+  .payment-names { flex: 1; }
+  .payment-arrow { color: var(--muted); margin: 0 4px; }
+  .amount-tag { background: rgba(200,241,53,0.15); color: var(--accent); padding: 3px 10px; border-radius: 20px; font-weight: 700; font-size: 0.82rem; white-space: nowrap; }
+  .paid-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 4px 10px; font-size: 0.74rem; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+  .paid-btn.done { background: rgba(77,255,155,0.15); color: var(--green); border-color: rgba(77,255,155,0.4); }
+
+  .date-group { margin-bottom: 20px; }
+  .date-group-title { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 2px; color: var(--muted); margin-bottom: 10px; }
+  .hist-match-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 8px; }
+  .hist-match-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .hist-match-num { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 1px; color: var(--accent); }
+  .hist-bet { font-size: 0.78rem; color: var(--accent2); }
+  .hist-winner { color: var(--green); font-weight: 600; }
+  .hist-loser { color: var(--muted); }
+  .hist-empty { color: var(--muted); font-size: 0.9rem; text-align: center; padding: 40px 0; }
+
+  .leaderboard-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 14px; }
+  .lb-rank { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--muted); width: 28px; text-align: center; }
+  .lb-rank.gold { color: var(--accent2); }
+  .lb-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
+  .lb-name { flex: 1; font-weight: 600; font-size: 0.95rem; }
+  .lb-stats { text-align: right; }
+  .lb-wl { font-size: 0.8rem; color: var(--muted); }
+  .lb-money { font-size: 0.9rem; font-weight: 700; }
+  .lb-money.pos { color: var(--green); }
+  .lb-money.neg { color: var(--red); }
+  .lb-money.zero { color: var(--muted); }
+
+  .match-hist-section { margin-top: 20px; }
+  .match-hist-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; }
+  .match-hist-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 0.83rem; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: flex-end; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 20px 20px 0 0; padding: 28px; width: 100%; max-width: 520px; animation: slideUp 0.22s ease; }
+  @keyframes slideUp { from{transform:translateY(50px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 16px; color: var(--accent); }
+  .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-btns .btn { margin-top: 0; }
+
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--accent); color: #0d0d0f; padding: 11px 22px; border-radius: 40px; font-weight: 600; font-size: 0.88rem; z-index: 200; transition: transform 0.3s ease; white-space: nowrap; pointer-events: none; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .action-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .session-selector { margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="header-left">
+      <span style="font-size:28px">🏸</span>
+      <h1>Shuttle Squad</h1>
+    </div>
+  </header>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showTab('match')">🏸 Match</button>
+    <button class="nav-tab" onclick="showTab('history')">📅 History</button>
+    <button class="nav-tab" onclick="showTab('leaderboard')">🏆 Leaders</button>
+    <button class="nav-tab" onclick="showTab('setup')">⚙️ Setup</button>
+  </div>
+
+  <!-- SETUP TAB — no Supabase mention, just player names + reset -->
+  <div class="screen active" id="tab-setup">
+    <div class="card">
+      <div class="card-title">Player Setup</div>
+      <label>Number of Players</label>
+      <input type="number" id="player-count" min="3" max="10" value="5">
+      <button class="btn btn-secondary" onclick="generatePlayerInputs()" style="margin-bottom:14px">Generate Names</button>
+    </div>
+    <div class="card" id="names-card" style="display:none">
+      <div class="card-title">Player Names</div>
+      <div class="player-inputs" id="player-inputs"></div>
+      <button class="btn btn-primary" onclick="startSession()">🏸 Start Session</button>
+    </div>
+    <div class="card" id="danger-card" style="display:none">
+      <div class="card-title" style="color:var(--red)">⚠️ Danger Zone</div>
+      <button class="btn btn-danger" onclick="confirmReset()">Reset All Data</button>
+    </div>
+  </div>
+
+  <!-- MATCH TAB -->
+  <div class="screen" id="tab-match">
+    <div id="no-session" style="text-align:center;padding:60px 0;color:var(--muted)">
+      <div style="font-size:3rem;margin-bottom:12px">🏸</div>
+      <div style="font-size:1rem;margin-bottom:20px">No active session.<br>Go to Setup to start.</div>
+      <button class="btn btn-primary" style="width:auto;padding:12px 28px" onclick="showTab('setup')">Go to Setup</button>
+    </div>
+    <div id="match-content" style="display:none">
+      <div class="match-header">
+        <div class="match-title" id="match-title">Match 1</div>
+        <div class="bet-badge" id="bet-badge">₹50 / match</div>
+      </div>
+      <div class="players-bar">
+        <div class="pbar-title">Players</div>
+        <div class="pbar-list" id="players-bar"></div>
+      </div>
+      <div class="scoreboard">
+        <div class="team-card" id="team-a-card"><div class="team-label">TEAM A</div><div class="team-avatars" id="team-a-avatars"></div></div>
+        <div class="vs-text">VS</div>
+        <div class="team-card" id="team-b-card"><div class="team-label">TEAM B</div><div class="team-avatars" id="team-b-avatars"></div></div>
+      </div>
+      <div class="bench-section" id="bench-section" style="display:none">
+        <div class="bench-title">⏳ On Bench</div>
+        <div class="bench-list" id="bench-list"></div>
+      </div>
+      <div id="state-setup">
+        <div class="action-row">
+          <button class="btn btn-secondary btn-sm" id="reteam-btn" onclick="reteam()">🔀 Re-team</button>
+        </div>
+        <label>Bet Amount (₹)</label>
+        <input type="number" id="bet-input" value="50" style="margin-bottom:12px">
+        <button class="btn btn-primary" onclick="startPlaying()">▶ Start Match</button>
+      </div>
+      <div id="state-playing" style="display:none">
+        <div class="playing-hint">Match in progress — tap the winning team!</div>
+        <div class="win-btns">
+          <button class="win-btn" onclick="declareWinner('A')">🏆 Team A Won</button>
+          <button class="win-btn" onclick="declareWinner('B')">🏆 Team B Won</button>
+        </div>
+      </div>
+      <div id="state-result" style="display:none">
+        <div class="pay-picker" id="pay-picker"></div>
+        <div class="bet-result" id="bet-result"></div>
+        <button class="btn btn-primary" onclick="nextMatch()">+ Next Match</button>
+      </div>
+      <div class="match-hist-section" id="session-hist-section" style="display:none">
+        <div class="match-hist-title">This Session</div>
+        <div id="session-hist-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div class="screen" id="tab-history">
+    <div style="margin-top:16px">
+      <div class="session-selector">
+        <label>Filter by Date</label>
+        <select id="history-date-filter" onchange="renderHistory()"><option value="all">All Sessions</option></select>
+      </div>
+      <div id="history-content"></div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD TAB -->
+  <div class="screen" id="tab-leaderboard">
+    <div style="margin-top:16px">
+      <div class="session-selector">
+        <label>Filter by Date</label>
+        <select id="lb-date-filter" onchange="renderLeaderboard()"><option value="all">All Time</option></select>
+      </div>
+      <div id="leaderboard-content"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Confirm</div>
+    <div id="modal-body"></div>
+    <div class="modal-btns" id="modal-btns"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  ▼▼▼  OWNER ONLY: PASTE YOUR SUPABASE CREDENTIALS HERE  ▼▼▼
+// ═══════════════════════════════════════════════════════════════
+const SB_URL = 'https://seormfnubstfpjpcduef.supabase.co';       // e.g. 'https://abcdefgh.supabase.co'
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlb3JtZm51YnN0ZnBqcGNkdWVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjM4NjAsImV4cCI6MjA4NzQzOTg2MH0.ynU79VvFWaUZ1A674xq6Xlz4vX2ENtJE4DFTJm2oUq4';  // e.g. 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+// ═══════════════════════════════════════════════════════════════
+//  Players never see this. Only you edit this file before deploy.
+// ═══════════════════════════════════════════════════════════════
+
+const COLORS=['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF922B','#CC5DE8','#20C997','#F06595','#74C0FC','#A9E34B'];
+const SK='shuttle_squad_v3';
+
+let data=(() => {
+  try { const r=localStorage.getItem(SK); if(r) return JSON.parse(r); } catch(e){}
+  return { players:[], sessions:[], currentSession:null };
+})();
+
+function save() {
+  try { localStorage.setItem(SK, JSON.stringify(data)); } catch(e){}
+}
+
+// ── SUPABASE (completely invisible to players) ──
+let db=null;
+function initDb() {
+  if (SB_URL.startsWith('https') && SB_KEY.startsWith('eyJ')) {
+    try { db=supabase.createClient(SB_URL, SB_KEY); } catch(e){}
+  }
+}
+async function pushToCloud(record) {
+  if (!db) return;
+  try {
+    await db.from('matches').insert({
+      session_date: record.date,
+      match_num:    record.matchNum,
+      team_a:       JSON.stringify(record.teamA.map(i=>data.players[i]?.name)),
+      team_b:       JSON.stringify(record.teamB.map(i=>data.players[i]?.name)),
+      winner:       record.winner,
+      bet:          record.bet,
+      payments:     JSON.stringify(record.payments),
+      players_snapshot: JSON.stringify(data.players)
+    });
+  } catch(e) { /* silent — already saved locally */ }
+}
+
+// ── TABS ──
+function showTab(tab) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('.nav-tab')[['match','history','leaderboard','setup'].indexOf(tab)].classList.add('active');
+  if(tab==='match') renderMatchTab();
+  if(tab==='history') { populateDateFilters(); renderHistory(); }
+  if(tab==='leaderboard') { populateDateFilters(); renderLeaderboard(); }
+  if(tab==='setup') document.getElementById('danger-card').style.display=data.players.length?'block':'none';
+}
+
+// ── SETUP ──
+function generatePlayerInputs() {
+  const n=parseInt(document.getElementById('player-count').value);
+  if(isNaN(n)||n<3||n>10) { showToast('Enter 3–10 players'); return; }
+  const container=document.getElementById('player-inputs'); container.innerHTML='';
+  for(let i=0;i<n;i++){
+    const def=data.players[i]?.name||`Player ${i+1}`;
+    const row=document.createElement('div'); row.className='player-input-row';
+    row.innerHTML=`<div class="player-dot" style="background:${COLORS[i]}"></div><input type="text" id="pname-${i}" value="${def}" style="margin-bottom:0">`;
+    container.appendChild(row);
+  }
+  document.getElementById('names-card').style.display='block';
+}
+
+function startSession() {
+  const n=parseInt(document.getElementById('player-count').value);
+  data.players=[];
+  for(let i=0;i<n;i++){
+    const name=document.getElementById(`pname-${i}`)?.value.trim()||`P${i+1}`;
+    data.players.push({name,color:COLORS[i]});
+  }
+  const sh=shuffle(data.players.map((_,i)=>i));
+  data.currentSession={
+    date:today(), matchNum:1,
+    teamA:[sh[0],sh[1]], teamB:[sh[2],sh[3]], bench:sh.slice(4),
+    state:'setup', bet:50, winner:null,
+    payments:[], payAssign:null, history:[]
+  };
+  save(); showTab('match'); showToast('Session started! 🏸');
+}
+
+function confirmReset() {
+  showModal('Reset All Data?','This clears all local players, sessions and history.',[
+    {label:'Reset',cls:'btn btn-danger',fn:()=>{ data={players:[],sessions:[],currentSession:null}; save(); closeModal(); showTab('match'); showToast('Data cleared'); }},
+    {label:'Cancel',cls:'btn btn-secondary',fn:closeModal}
+  ]);
+}
+
+// ── MATCH RENDER ──
+function renderMatchTab() {
+  const cs=data.currentSession;
+  if(!cs){ document.getElementById('no-session').style.display='block'; document.getElementById('match-content').style.display='none'; return; }
+  document.getElementById('no-session').style.display='none';
+  document.getElementById('match-content').style.display='block';
+  document.getElementById('match-title').textContent=`Match ${cs.matchNum}`;
+  document.getElementById('bet-badge').textContent=`₹${cs.bet} / match`;
+  document.getElementById('bet-input').value=cs.bet;
+  renderPlayersBar(); renderTeams(); renderBench(); renderStateUI(); renderSessionHistory();
+  document.getElementById('reteam-btn').style.display=(cs.history.length===0&&cs.state==='setup')?'inline-flex':'none';
+}
+
+function renderPlayersBar() {
+  const cs=data.currentSession; const bar=document.getElementById('players-bar'); bar.innerHTML='';
+  data.players.forEach((p,i)=>{
+    let w=0,l=0;
+    (cs.history||[]).forEach(m=>{ if((m.winner==='A'?m.teamA:m.teamB).includes(i))w++; if((m.winner==='A'?m.teamB:m.teamA).includes(i))l++; });
+    const el=document.createElement('div'); el.className='pbar-player';
+    el.innerHTML=`<div class="pbar-dot" style="background:${p.color}"></div><span>${p.name}</span><span class="pbar-wins">${w}W ${l}L</span>`;
+    bar.appendChild(el);
+  });
+}
+
+function renderTeams() {
+  const cs=data.currentSession;
+  const mk=(indices,cid)=>{
+    const c=document.getElementById(cid); c.innerHTML='';
+    indices.forEach(idx=>{ const p=data.players[idx]; if(!p) return; const el=document.createElement('div'); el.className='player-avatar'; el.innerHTML=`<div class="avatar-circle" style="background:${p.color};color:#fff">${p.name[0].toUpperCase()}</div><div class="avatar-name">${p.name}</div>`; c.appendChild(el); });
+  };
+  mk(cs.teamA,'team-a-avatars'); mk(cs.teamB,'team-b-avatars');
+  const ac=document.getElementById('team-a-card'); const bc=document.getElementById('team-b-card');
+  ac.className='team-card'; bc.className='team-card';
+  if(cs.state==='result'&&cs.winner){ ac.className='team-card'+(cs.winner==='A'?' winner-highlight':' loser-dim'); bc.className='team-card'+(cs.winner==='B'?' winner-highlight':' loser-dim'); }
+}
+
+function renderBench() {
+  const cs=data.currentSession; const sec=document.getElementById('bench-section');
+  if(!cs.bench||!cs.bench.length){sec.style.display='none';return;}
+  sec.style.display='block'; const list=document.getElementById('bench-list'); list.innerHTML='';
+  cs.bench.forEach(idx=>{ const p=data.players[idx]; if(!p) return; const el=document.createElement('div'); el.className='bench-chip'; el.innerHTML=`<div class="pbar-dot" style="background:${p.color}"></div><span>${p.name}</span>`; list.appendChild(el); });
+}
+
+function renderStateUI() {
+  const cs=data.currentSession;
+  document.getElementById('state-setup').style.display=cs.state==='setup'?'block':'none';
+  document.getElementById('state-playing').style.display=cs.state==='playing'?'block':'none';
+  document.getElementById('state-result').style.display=cs.state==='result'?'block':'none';
+  if(cs.state==='result') renderResult();
+}
+
+// ── PAY PICKER: each loser picks ONE winner to pay X/2 ──
+function renderResult() {
+  const cs=data.currentSession;
+  const winIdx=cs.winner==='A'?cs.teamA:cs.teamB;
+  const loseIdx=cs.winner==='A'?cs.teamB:cs.teamA;
+  const perLoser=Math.round(cs.bet/loseIdx.length);
+  if(!cs.payAssign){ cs.payAssign=loseIdx.map((lI,i)=>({loserIdx:lI,toIdx:winIdx[i%winIdx.length]})); save(); }
+  const picker=document.getElementById('pay-picker');
+  picker.innerHTML=`<div class="pay-picker-title">💸 Who pays whom?</div><div class="pay-picker-sub">Each loser pays ₹${perLoser} to the winner they choose.</div>`;
+  cs.payAssign.forEach((row,i)=>{
+    const loser=data.players[row.loserIdx]; if(!loser) return;
+    const rowDiv=document.createElement('div'); rowDiv.className='pay-picker-row';
+    const opts=winIdx.map(wI=>`<option value="${wI}" ${row.toIdx===wI?'selected':''}>${data.players[wI]?.name||'?'}</option>`).join('');
+    rowDiv.innerHTML=`<div class="ppr-loser"><div class="ppr-avatar" style="background:${loser.color}">${loser.name[0].toUpperCase()}</div><span>${loser.name}</span></div><span class="ppr-arrow">→</span><select class="ppr-select" onchange="updatePayTo(${i},parseInt(this.value))">${opts}</select><span class="ppr-amount">₹${perLoser}</span>`;
+    picker.appendChild(rowDiv);
+  });
+  buildSettlementView();
+}
+
+function updatePayTo(i, toIdx) { data.currentSession.payAssign[i].toIdx=toIdx; save(); buildSettlementView(); }
+
+function buildSettlementView() {
+  const cs=data.currentSession;
+  const winIdx=cs.winner==='A'?cs.teamA:cs.teamB;
+  const loseIdx=cs.winner==='A'?cs.teamB:cs.teamA;
+  const perLoser=Math.round(cs.bet/loseIdx.length);
+  const winNames=winIdx.map(i=>data.players[i]?.name||'?');
+  cs.payments=cs.payAssign.map((row,i)=>({ from:data.players[row.loserIdx]?.name||'?', to:data.players[row.toIdx]?.name||'?', amount:perLoser, paid:cs.payments[i]?.paid||false }));
+  save();
+  const div=document.getElementById('bet-result');
+  div.innerHTML=`<div class="bet-result-title">✅ Settlement — ₹${cs.bet}</div><div class="bet-winner-line">🏆 ${winNames.join(' & ')} won!</div>`;
+  cs.payments.forEach((pay,i)=>{ const row=document.createElement('div'); row.className='payment-row'; row.innerHTML=`<span class="payment-names"><strong>${pay.from}</strong><span class="payment-arrow">→</span><strong>${pay.to}</strong></span><span class="amount-tag">₹${pay.amount}</span><button class="paid-btn ${pay.paid?'done':''}" onclick="markPaid(${i})">${pay.paid?'✓ Paid':'Mark Paid'}</button>`; div.appendChild(row); });
+}
+
+function markPaid(i) {
+  const cs=data.currentSession; cs.payments[i].paid=!cs.payments[i].paid;
+  const sess=data.sessions.find(s=>s.date===cs.date); if(sess){const m=sess.matches.find(m=>m.matchNum===cs.matchNum); if(m&&m.payments[i]) m.payments[i].paid=cs.payments[i].paid;}
+  save(); buildSettlementView();
+}
+
+function renderSessionHistory() {
+  const cs=data.currentSession; const sec=document.getElementById('session-hist-section'); const list=document.getElementById('session-hist-list');
+  if(!cs.history||!cs.history.length){sec.style.display='none';return;}
+  sec.style.display='block'; list.innerHTML='';
+  [...cs.history].reverse().forEach(m=>{ const wt=(m.winner==='A'?m.teamA:m.teamB).map(i=>data.players[i]?.name||`P${i}`); const lt=(m.winner==='A'?m.teamB:m.teamA).map(i=>data.players[i]?.name||`P${i}`); const el=document.createElement('div'); el.className='match-hist-item'; el.innerHTML=`<span style="color:var(--muted);font-size:0.75rem;margin-right:8px">M${m.matchNum}</span><span style="flex:1"><span style="color:var(--green)">${wt.join(' & ')}</span> beat <span style="color:var(--muted)">${lt.join(' & ')}</span></span><span style="color:var(--accent2);font-size:0.78rem">₹${m.bet}</span>`; list.appendChild(el); });
+}
+
+// ── MATCH ACTIONS ──
+function reteam() {
+  const cs=data.currentSession; if(cs.history.length>0||cs.state!=='setup') return;
+  const all=[...cs.teamA,...cs.teamB,...cs.bench]; const sh=shuffle([...all]);
+  cs.teamA=[sh[0],sh[1]]; cs.teamB=[sh[2],sh[3]]; cs.bench=sh.slice(4);
+  save(); renderMatchTab(); showToast('Teams reshuffled! 🔀');
+}
+
+function startPlaying() {
+  const cs=data.currentSession; cs.bet=parseInt(document.getElementById('bet-input').value)||50;
+  cs.state='playing'; save(); renderMatchTab();
+}
+
+async function declareWinner(team) {
+  const cs=data.currentSession; cs.winner=team; cs.state='result'; cs.payAssign=null; cs.payments=[];
+  const record={matchNum:cs.matchNum,teamA:[...cs.teamA],teamB:[...cs.teamB],bench:[...cs.bench],winner:team,bet:cs.bet,payments:[],date:cs.date};
+  cs.history.push(record);
+  let sess=data.sessions.find(s=>s.date===cs.date); if(!sess){sess={date:cs.date,matches:[]};data.sessions.push(sess);} sess.matches.push(record);
+  save(); renderMatchTab();
+  await pushToCloud(record);
+}
+
+function nextMatch() {
+  const cs=data.currentSession;
+  const winIdx=cs.winner==='A'?cs.teamA:cs.teamB; const loseIdx=cs.winner==='A'?cs.teamB:cs.teamA;
+  const shuffledLosers=shuffle([...loseIdx]); const slotsForLosers=Math.max(0,2-cs.bench.length);
+  cs.teamA=[...winIdx]; cs.teamB=[...cs.bench,...shuffledLosers.slice(0,slotsForLosers)].slice(0,2); cs.bench=shuffledLosers.slice(slotsForLosers);
+  cs.matchNum++; cs.state='setup'; cs.winner=null; cs.payments=[]; cs.payAssign=null;
+  save(); renderMatchTab();
+}
+
+// ── HISTORY ──
+function populateDateFilters() {
+  const dates=[...new Set(data.sessions.map(s=>s.date))].sort().reverse();
+  ['history-date-filter','lb-date-filter'].forEach(id=>{
+    const sel=document.getElementById(id); if(!sel) return; const cur=sel.value; sel.innerHTML='';
+    const all=document.createElement('option'); all.value='all'; all.textContent=id==='lb-date-filter'?'All Time':'All Sessions'; sel.appendChild(all);
+    dates.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=formatDate(d);sel.appendChild(o);}); if(cur) sel.value=cur;
+  });
+}
+
+function renderHistory() {
+  const filter=document.getElementById('history-date-filter').value; const content=document.getElementById('history-content'); content.innerHTML='';
+  let sessions=[...data.sessions].sort((a,b)=>b.date.localeCompare(a.date));
+  if(filter!=='all') sessions=sessions.filter(s=>s.date===filter);
+  if(!sessions.length){content.innerHTML='<div class="hist-empty">No history yet.</div>';return;}
+  sessions.forEach(session=>{
+    const grp=document.createElement('div'); grp.className='date-group'; grp.innerHTML=`<div class="date-group-title">📅 ${formatDate(session.date)}</div>`;
+    session.matches.forEach(m=>{ const wt=(m.winner==='A'?m.teamA:m.teamB).map(i=>data.players[i]?.name||`P${i}`); const lt=(m.winner==='A'?m.teamB:m.teamA).map(i=>data.players[i]?.name||`P${i}`); const card=document.createElement('div'); card.className='hist-match-card'; card.innerHTML=`<div class="hist-match-top"><span class="hist-match-num">Match ${m.matchNum}</span><span class="hist-bet">₹${m.bet}</span></div><div><span class="hist-winner">🏆 ${wt.join(' & ')}</span><span class="hist-loser"> vs ${lt.join(' & ')}</span></div>`; grp.appendChild(card); });
+    content.appendChild(grp);
+  });
+}
+
+// ── LEADERBOARD ──
+function renderLeaderboard() {
+  const filter=document.getElementById('lb-date-filter').value; const content=document.getElementById('leaderboard-content'); content.innerHTML='';
+  let sessions=filter==='all'?data.sessions:data.sessions.filter(s=>s.date===filter);
+  const stats={}; data.players.forEach((p,i)=>{stats[i]={name:p.name,color:p.color,wins:0,losses:0,earned:0};});
+  sessions.forEach(session=>{ session.matches.forEach(m=>{ const wi=m.winner==='A'?m.teamA:m.teamB; const li=m.winner==='A'?m.teamB:m.teamA; wi.forEach(i=>{if(stats[i]){stats[i].wins++;stats[i].earned+=m.bet/wi.length;}}); li.forEach(i=>{if(stats[i]){stats[i].losses++;stats[i].earned-=m.bet/li.length;}}); }); });
+  const sorted=Object.entries(stats).sort((a,b)=>b[1].wins-a[1].wins||b[1].earned-a[1].earned);
+  if(sorted.every(([,s])=>s.wins===0&&s.losses===0)){content.innerHTML='<div class="hist-empty">No data yet. Play some matches!</div>';return;}
+  sorted.forEach(([,s],rank)=>{ const card=document.createElement('div'); card.className='leaderboard-card'; const eFmt=s.earned>0?`+₹${Math.round(s.earned)}`:s.earned<0?`-₹${Math.abs(Math.round(s.earned))}`:'₹0'; const eCls=s.earned>0?'pos':s.earned<0?'neg':'zero'; card.innerHTML=`<div class="lb-rank ${rank===0?'gold':''}">${rank+1}</div><div class="lb-dot" style="background:${s.color}"></div><div class="lb-name">${s.name}</div><div class="lb-stats"><div class="lb-wl">${s.wins}W · ${s.losses}L</div><div class="lb-money ${eCls}">${eFmt}</div></div>`; content.appendChild(card); });
+}
+
+// ── UTILS ──
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function today(){return new Date().toISOString().split('T')[0];}
+function formatDate(d){try{return new Date(d+'T12:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});}catch(e){return d;}}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function showModal(title,body,btns){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=`<p style="font-size:0.88rem;color:var(--muted);line-height:1.6">${body}</p>`;
+  const bc=document.getElementById('modal-btns');bc.innerHTML='';
+  btns.forEach(b=>{const el=document.createElement('button');el.className=b.cls;el.textContent=b.label;el.onclick=b.fn;bc.appendChild(el);});
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target.id==='modal-overlay')closeModal();});
+
+// ── INIT ──
+initDb();
+if(data.currentSession) showTab('match'); else showTab('setup');
+</script>
+</body>
+</html>
