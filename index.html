@@ -11,21 +11,24 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
 body::before{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(200,241,53,.07) 0%,transparent 70%);pointer-events:none;z-index:0;}
-#app{max-width:520px;margin:0 auto;padding-bottom:80px;position:relative;z-index:1;}
+#app{max-width:520px;margin:0 auto;padding-bottom:90px;position:relative;z-index:1;}
 
 /* HEADER */
-header{padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between;}
+header{padding:18px 20px 0;display:flex;align-items:center;justify-content:space-between;}
 .header-left{display:flex;align-items:center;gap:10px;}
-h1{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:var(--accent);}
+h1{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;letter-spacing:2px;color:var(--accent);}
 .live-dot{display:none;width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.2s infinite;}
 .live-dot.on{display:inline-block;}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
-.session-pill{font-size:.72rem;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;color:var(--accent2);letter-spacing:1px;display:none;}
+.session-pill{font-size:.72rem;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;color:var(--accent2);letter-spacing:1px;display:none;cursor:pointer;}
 .session-pill.on{display:inline-block;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.me-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;border:2px solid var(--border);cursor:pointer;transition:border-color .2s;flex-shrink:0;}
+.me-avatar:hover,.me-avatar.active{border-color:var(--accent);}
 
 /* NAV */
-.nav{display:flex;gap:3px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;margin:14px 20px;}
-.nav-btn{flex:1;text-align:center;padding:8px 4px;border-radius:8px;font-size:.76rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;border:none;background:transparent;font-family:'DM Sans',sans-serif;}
+.nav{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;margin:12px 20px;}
+.nav-btn{flex:1;text-align:center;padding:8px 2px;border-radius:8px;font-size:.7rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;border:none;background:transparent;font-family:'DM Sans',sans-serif;}
 .nav-btn.active{background:var(--surface2);color:var(--text);}
 
 /* SCREENS */
@@ -33,8 +36,8 @@ h1{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:v
 .screen.active{display:block;}
 
 /* CARDS */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;margin-bottom:14px;}
-.card-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:1px;color:var(--accent);margin-bottom:14px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:14px;}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:1px;color:var(--accent);margin-bottom:13px;}
 
 /* FORMS */
 label{font-size:.75rem;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;}
@@ -55,16 +58,6 @@ select option{background:var(--surface2);}
 .btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
 .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
 
-/* JOIN/HOST SCREEN */
-.join-hero{text-align:center;padding:40px 0 20px;}
-.join-icon{font-size:3rem;margin-bottom:10px;}
-.join-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:2px;color:var(--accent);margin-bottom:8px;}
-.join-sub{font-size:.85rem;color:var(--muted);line-height:1.6;}
-.divider-or{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:.78rem;}
-.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border);}
-.code-display{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;letter-spacing:8px;color:var(--accent2);text-align:center;padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;margin-bottom:12px;}
-.viewer-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(200,241,53,.1);border:1px solid rgba(200,241,53,.3);border-radius:20px;padding:5px 12px;font-size:.78rem;color:var(--accent);margin-bottom:14px;}
-
 /* MATCH HEADER */
 .match-header{display:flex;align-items:center;justify-content:space-between;margin:14px 0;}
 .match-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:2px;}
@@ -78,13 +71,11 @@ select option{background:var(--surface2);}
 .pbar-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 .pbar-stat{background:var(--surface2);border-radius:9px;padding:1px 7px;font-size:.68rem;color:var(--muted);}
 
-/* SCOREBOARD — supports 2,3,4 teams */
+/* SCOREBOARD */
 .scoreboard-2{display:grid;grid-template-columns:1fr auto 1fr;gap:9px;align-items:center;margin-bottom:13px;}
-.scoreboard-multi{display:grid;gap:9px;margin-bottom:13px;}
 .team-card{background:var(--surface);border:2px solid var(--border);border-radius:15px;padding:15px 10px;text-align:center;transition:all .25s;}
 .team-card.win{border-color:var(--green);background:rgba(77,255,155,.05);}
 .team-card.lose{opacity:.35;border-color:var(--red);}
-.team-card.waiting{border-color:var(--border);opacity:.6;}
 .team-label{font-family:'Bebas Neue',sans-serif;font-size:.88rem;letter-spacing:2px;color:var(--muted);margin-bottom:9px;}
 .team-avatars{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;}
 .p-avatar{display:flex;flex-direction:column;align-items:center;gap:3px;}
@@ -92,17 +83,11 @@ select option{background:var(--surface2);}
 .p-name{font-size:.63rem;color:var(--muted);max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .vs{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--muted);text-align:center;}
 
-/* NEXT UP (even mode, waiting teams) */
-.next-up-section{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:13px 15px;margin-bottom:13px;}
-.next-up-title{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:9px;}
-.next-up-list{display:flex;flex-wrap:wrap;gap:8px;}
-.next-chip{display:flex;align-items:center;gap:7px;background:var(--surface2);border-radius:18px;padding:5px 11px;font-size:.82rem;}
-
-/* BENCH (odd mode) */
-.bench-section{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:13px 15px;margin-bottom:13px;}
-.bench-title{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:9px;}
-.bench-list{display:flex;flex-wrap:wrap;gap:7px;}
-.bench-chip{display:flex;align-items:center;gap:7px;background:var(--surface2);border-radius:18px;padding:5px 11px;font-size:.82rem;}
+/* BENCH / QUEUE */
+.bench-section,.next-up-section{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:13px 15px;margin-bottom:13px;}
+.bench-title,.next-up-title{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:9px;}
+.bench-list,.next-up-list{display:flex;flex-wrap:wrap;gap:7px;}
+.bench-chip,.next-chip{display:flex;align-items:center;gap:7px;background:var(--surface2);border-radius:18px;padding:5px 11px;font-size:.82rem;}
 
 /* WIN BUTTONS */
 .win-btns{display:grid;gap:9px;margin-bottom:13px;}
@@ -115,12 +100,10 @@ select option{background:var(--surface2);}
 .pay-picker-title{font-family:'Bebas Neue',sans-serif;font-size:.98rem;letter-spacing:1px;color:var(--accent2);margin-bottom:4px;}
 .pay-picker-sub{font-size:.77rem;color:var(--muted);margin-bottom:13px;line-height:1.5;}
 .pay-picker-row{display:flex;align-items:center;gap:9px;margin-bottom:11px;flex-wrap:wrap;}
-.pay-picker-row:last-child{margin-bottom:0;}
 .ppr-loser{display:flex;align-items:center;gap:6px;font-weight:600;font-size:.86rem;min-width:85px;}
 .ppr-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;color:#fff;flex-shrink:0;}
 .ppr-arrow{color:var(--muted);}
 .ppr-sel{flex:1;min-width:100px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.86rem;padding:8px 11px;outline:none;margin-bottom:0;-webkit-appearance:none;}
-.ppr-sel:focus{border-color:var(--accent);}
 .ppr-amount{background:rgba(200,241,53,.14);color:var(--accent);padding:3px 10px;border-radius:18px;font-weight:700;font-size:.8rem;white-space:nowrap;}
 
 /* BET RESULT */
@@ -135,35 +118,10 @@ select option{background:var(--surface2);}
 .paid-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 9px;font-size:.72rem;cursor:pointer;transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif;}
 .paid-btn.done{background:rgba(77,255,155,.14);color:var(--green);border-color:rgba(77,255,155,.35);}
 
-/* VIEWER LOCK (read-only overlay for joiners) */
-.viewer-lock{position:absolute;inset:0;z-index:10;cursor:not-allowed;}
+/* VIEWER */
 .viewer-info{background:rgba(200,241,53,.08);border:1px solid rgba(200,241,53,.2);border-radius:12px;padding:12px 14px;font-size:.8rem;color:var(--accent);margin-bottom:13px;text-align:center;}
 
-/* HISTORY */
-.date-group{margin-bottom:18px;}
-.date-group-title{font-family:'Bebas Neue',sans-serif;font-size:.92rem;letter-spacing:2px;color:var(--muted);margin-bottom:9px;}
-.hist-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:13px 15px;margin-bottom:7px;}
-.hist-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
-.hist-card-num{font-family:'Bebas Neue',sans-serif;font-size:.92rem;letter-spacing:1px;color:var(--accent);}
-.hist-bet{font-size:.75rem;color:var(--accent2);}
-.hist-winner{color:var(--green);font-weight:600;}
-.hist-loser{color:var(--muted);}
-.hist-empty{color:var(--muted);text-align:center;padding:50px 0;}
-
-/* LEADERBOARD */
-.lb-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:13px;}
-.lb-rank{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--muted);width:26px;text-align:center;}
-.lb-rank.gold{color:var(--accent2);}
-.lb-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
-.lb-name{flex:1;font-weight:600;font-size:.9rem;}
-.lb-stats{text-align:right;}
-.lb-wl{font-size:.75rem;color:var(--muted);}
-.lb-money{font-size:.86rem;font-weight:700;}
-.lb-money.pos{color:var(--green);}
-.lb-money.neg{color:var(--red);}
-.lb-money.zero{color:var(--muted);}
-
-/* SESSION HISTORY IN MATCH */
+/* SESSION HISTORY (match tab) */
 .sess-hist{margin-top:18px;}
 .sess-hist-title{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:9px;}
 .sess-hist-item{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:11px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;font-size:.81rem;}
@@ -172,9 +130,9 @@ select option{background:var(--surface2);}
 .action-row{display:flex;gap:7px;margin-bottom:11px;flex-wrap:wrap;}
 
 /* MODAL */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:100;align-items:flex-end;justify-content:center;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100;align-items:flex-end;justify-content:center;}
 .overlay.open{display:flex;}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:26px 22px;width:100%;max-width:520px;animation:slideUp .22s ease;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:520px;animation:slideUp .22s ease;max-height:88vh;overflow-y:auto;}
 @keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
 .modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:1px;margin-bottom:14px;color:var(--accent);}
 .modal-btns{display:flex;gap:9px;margin-top:17px;}
@@ -190,53 +148,231 @@ select option{background:var(--surface2);}
 .player-input-row input{margin-bottom:0;}
 .session-filter{margin-bottom:13px;}
 
+/* ════════════════════════════════════
+   ACTIVITY CALENDAR (GitHub heatmap)
+   ════════════════════════════════════ */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.cal-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--accent);}
+.cal-streak{font-size:.8rem;font-weight:600;color:var(--accent2);}
+/* outer scroll container */
+.cal-scroll{overflow-x:auto;overflow-y:hidden;padding-bottom:2px;}
+.cal-scroll::-webkit-scrollbar{height:3px;}
+.cal-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.cal-scroll::-webkit-scrollbar-track{background:transparent;}
+/* the fixed-width inner table */
+.cal-table{display:inline-flex;flex-direction:column;gap:0;}
+.cal-months-strip{display:flex;margin-left:20px;margin-bottom:3px;height:13px;}
+.cal-mon-label{font-size:.6rem;color:var(--muted);white-space:nowrap;overflow:hidden;}
+/* row of day-label + week columns */
+.cal-grid-area{display:flex;gap:0;}
+.cal-day-labels{display:flex;flex-direction:column;gap:2px;width:18px;margin-right:2px;padding-top:1px;}
+.cal-day-lbl{height:10px;font-size:.57rem;color:var(--muted);line-height:10px;text-align:right;}
+.cal-weeks-row{display:flex;gap:2px;}
+.cal-wk{display:flex;flex-direction:column;gap:2px;}
+/* the cell */
+.cal-c{width:10px;height:10px;border-radius:2px;background:#1e1e24;flex-shrink:0;cursor:default;transition:transform .12s;}
+.cal-c.active{cursor:pointer;}
+.cal-c.active:hover{transform:scale(1.4);position:relative;z-index:3;}
+.cal-c.today-ring{box-shadow:0 0 0 1px var(--accent2);}
+/* SESSION DETAIL */
+.sess-detail{margin-top:0;}
+.sess-detail-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.sess-detail-date{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--accent2);}
+.sess-detail-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:2px 6px;}
+.sess-match-row{background:var(--surface2);border-radius:10px;padding:10px 13px;margin-bottom:6px;font-size:.82rem;}
+.smr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
+.smr-num{font-size:.7rem;color:var(--muted);}
+.smr-bet{font-size:.72rem;color:var(--accent2);}
+.smr-winner{color:var(--green);font-weight:600;}
+.smr-loser{color:var(--muted);}
+/* day leaderboard */
+.day-lb-row{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);font-size:.82rem;}
+.day-lb-row:last-child{border-bottom:none;}
+.day-lb-rank{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;width:18px;text-align:center;}
+.day-lb-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.day-lb-name{flex:1;font-weight:600;}
+.day-lb-wl{font-size:.7rem;color:var(--muted);}
+.day-lb-earn{font-weight:700;font-size:.82rem;}
+.day-lb-earn.pos{color:var(--green);}
+.day-lb-earn.neg{color:var(--red);}
+.day-lb-earn.zero{color:var(--muted);}
+
+/* ════════════════════════════════════
+   MONEY TRACKER — per-transaction view
+   ════════════════════════════════════ */
+.money-section{margin-top:18px;}
+.money-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.money-title{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;}
+.money-net-badge{font-weight:700;font-size:.84rem;padding:3px 10px;border-radius:18px;}
+.money-net-badge.pos{background:rgba(77,255,155,.14);color:var(--green);}
+.money-net-badge.neg{background:rgba(255,77,109,.12);color:var(--red);}
+.money-net-badge.zero{background:var(--surface2);color:var(--muted);}
+.money-player-strip{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.money-player-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:18px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:600;cursor:pointer;transition:all .18s;}
+.money-player-btn:hover{border-color:rgba(200,241,53,.4);color:var(--text);}
+.money-player-btn .mp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.money-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.money-card-section{padding:12px 15px;}
+.money-card-section+.money-card-section{border-top:1px solid var(--border);}
+.mcs-label{font-size:.63rem;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:700;}
+.mcs-txn-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);gap:6px;}
+.mcs-txn-row:last-of-type{border-bottom:none;}
+.mcs-txn-row.txn-settled .mcs-txn-name,.mcs-txn-row.txn-settled .mcs-dot{opacity:.45;}
+.mcs-txn-left{display:flex;align-items:center;gap:7px;flex:1;min-width:0;}
+.mcs-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.mcs-txn-name{font-size:.84rem;font-weight:600;white-space:nowrap;}
+.mcs-txn-match{font-size:.65rem;color:var(--muted);background:var(--surface2);border-radius:5px;padding:1px 6px;white-space:nowrap;flex-shrink:0;}
+.mcs-txn-right{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.mcs-amt{font-weight:700;font-size:.84rem;}
+.mcs-amt.owe{color:var(--red);}
+.mcs-amt.recv{color:var(--green);}
+.mcs-amt.settled{color:var(--muted);text-decoration:line-through;font-weight:400;font-size:.8rem;}
+.mcs-pay-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 9px;font-size:.7rem;cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.mcs-pay-btn.done{background:rgba(77,255,155,.12);color:var(--green);border-color:rgba(77,255,155,.3);}
+.mcs-status-pill{font-size:.67rem;padding:2px 8px;border-radius:18px;font-weight:600;white-space:nowrap;}
+.mcs-status-pill.paid{background:rgba(77,255,155,.12);color:var(--green);}
+.mcs-status-pill.unpaid{background:rgba(255,77,109,.1);color:var(--red);}
+.mcs-total-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0 2px;font-size:.74rem;color:var(--muted);border-top:1px solid var(--border);margin-top:3px;}
+.money-net-row{padding:12px 15px;display:flex;align-items:center;justify-content:space-between;}
+.money-net-label{font-size:.78rem;color:var(--muted);}
+.money-net-val{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:1px;}
+.money-net-val.pos{color:var(--green);}
+.money-net-val.neg{color:var(--red);}
+.money-net-val.zero{color:var(--muted);}
+.money-empty{text-align:center;color:var(--muted);font-size:.82rem;padding:14px 0;}
+
+
+/* ════════════════════════════════════
+   LEADERBOARD v2 — compact + form pills
+   ════════════════════════════════════ */
+.lb-filter-tabs{display:flex;gap:5px;margin-bottom:13px;flex-wrap:wrap;}
+.lb-ftab{padding:5px 12px;border-radius:18px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .18s;}
+.lb-ftab.active{background:var(--accent);color:#0d0d0f;border-color:var(--accent);}
+
+.lb-hero{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.lb-hero-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 8px;text-align:center;cursor:pointer;transition:border-color .2s;}
+.lb-hero-card:hover{border-color:rgba(200,241,53,.3);}
+.lb-hero-card.first{border-color:rgba(255,215,0,.4);background:linear-gradient(160deg,rgba(255,215,0,.06),transparent);}
+.lb-hero-card.second{border-color:rgba(192,192,192,.3);}
+.lb-hero-card.third{border-color:rgba(205,127,50,.3);}
+.lb-hero-medal{font-size:1.3rem;margin-bottom:5px;}
+.lb-hero-av{width:40px;height:40px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;color:#fff;}
+.lb-hero-name{font-weight:700;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lb-hero-earn{font-weight:700;font-size:.84rem;margin-top:2px;}
+.lb-hero-earn.pos{color:var(--green);}
+.lb-hero-earn.neg{color:var(--red);}
+.lb-hero-earn.zero{color:var(--muted);}
+.lb-hero-wl{font-size:.65rem;color:var(--muted);margin-top:1px;}
+
+.lb-specials{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px;}
+.lb-special-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 12px;display:flex;align-items:center;gap:9px;cursor:pointer;transition:border-color .2s;}
+.lb-special-card:hover{border-color:rgba(200,241,53,.25);}
+.lb-sp-icon{font-size:1.3rem;flex-shrink:0;}
+.lb-sp-label{font-size:.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;}
+.lb-sp-name{font-size:.84rem;font-weight:700;margin-top:1px;}
+.lb-sp-val{font-size:.72rem;color:var(--accent2);margin-top:1px;}
+
+.lb-table-title{font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;padding:0 2px;}
+
+/* compact lb row */
+.lb-row{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 13px;margin-bottom:6px;cursor:pointer;transition:border-color .2s;}
+.lb-row:hover{border-color:rgba(200,241,53,.25);}
+.lb-row-top{display:flex;align-items:center;gap:10px;}
+.lb-row-rank{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;width:22px;text-align:center;flex-shrink:0;}
+.lb-row-rank.r1{color:gold;}
+.lb-row-rank.r2{color:silver;}
+.lb-row-rank.r3{color:#cd7f32;}
+.lb-row-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;color:#fff;flex-shrink:0;}
+.lb-row-mid{flex:1;min-width:0;}
+.lb-row-name{font-weight:600;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lb-row-meta{font-size:.7rem;color:var(--muted);margin-top:1px;}
+.lb-row-right{text-align:right;flex-shrink:0;}
+.lb-row-earn{font-weight:700;font-size:.88rem;}
+.lb-row-earn.pos{color:var(--green);}
+.lb-row-earn.neg{color:var(--red);}
+.lb-row-earn.zero{color:var(--muted);}
+
+/* RECENT FORM PILLS */
+.form-pills{display:flex;gap:3px;margin-top:5px;}
+.form-pill{width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;}
+.form-pill.W{background:rgba(77,255,155,.2);color:var(--green);}
+.form-pill.L{background:rgba(255,77,109,.18);color:var(--red);}
+
+/* ════════════════════════════════════
+   MY PROFILE
+   ════════════════════════════════════ */
+.profile-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.profile-av{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.4rem;color:#fff;border:3px solid rgba(255,255,255,.12);flex-shrink:0;}
+.profile-info{flex:1;}
+.profile-name-big{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px;}
+.profile-sub{font-size:.78rem;color:var(--muted);margin-top:2px;}
+.profile-change-btn{font-size:.72rem;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;}
+
+.stats-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:13px;}
+.stat-box{background:var(--surface2);border-radius:11px;padding:12px 8px;text-align:center;}
+.stat-box-val{font-family:'Bebas Neue',sans-serif;font-size:1.45rem;letter-spacing:1px;}
+.stat-box-val.pos{color:var(--green);}
+.stat-box-val.neg{color:var(--red);}
+.stat-box-val.acc{color:var(--accent);}
+.stat-box-label{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-top:2px;}
+
+.profile-section-title{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:9px;margin-top:14px;}
+.profile-match-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:.82rem;}
+.profile-match-row:last-child{border-bottom:none;}
+
+/* PLAYER PICKER (no login - just pick name) */
+.player-picker-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.player-pick-btn{display:flex;align-items:center;gap:9px;background:var(--surface2);border:2px solid var(--border);border-radius:12px;padding:11px 13px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;color:var(--text);}
+.player-pick-btn:hover,.player-pick-btn.selected{border-color:var(--accent);background:rgba(200,241,53,.07);}
+.player-pick-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+
 /* TIMELINE */
 .timeline{margin-top:4px;}
 .tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
 .tl-item:last-child{border-bottom:none;}
-.tl-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;margin-top:1px;}
+.tl-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;margin-top:1px;}
 .tl-dot.win{background:rgba(77,255,155,.15);}
 .tl-dot.start{background:rgba(200,241,53,.12);}
 .tl-dot.pay{background:rgba(241,193,53,.12);}
 .tl-dot.info{background:rgba(107,107,128,.15);}
 .tl-body{flex:1;}
-.tl-title{font-size:.86rem;font-weight:600;line-height:1.4;}
-.tl-sub{font-size:.76rem;color:var(--muted);margin-top:2px;line-height:1.4;}
-.tl-time{font-size:.7rem;color:var(--muted);white-space:nowrap;padding-top:3px;}
+.tl-title{font-size:.84rem;font-weight:600;line-height:1.4;}
+.tl-sub{font-size:.74rem;color:var(--muted);margin-top:2px;line-height:1.4;}
+.tl-time{font-size:.68rem;color:var(--muted);white-space:nowrap;padding-top:3px;}
 .tl-empty{color:var(--muted);font-size:.85rem;text-align:center;padding:30px 0;}
 
-/* VIEW-ONLY state indicator (for viewers) */
-.view-state-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:13px;text-align:center;}
-.view-state-label{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:7px;}
-.view-state-value{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;color:var(--accent);}
-.view-state-sub{font-size:.79rem;color:var(--muted);margin-top:4px;}
+/* SETUP player choose-me */
+.choose-me-card{background:linear-gradient(135deg,rgba(200,241,53,.07),transparent);border:1px solid rgba(200,241,53,.2);border-radius:14px;padding:14px 16px;margin-bottom:14px;}
+.choose-me-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--accent);margin-bottom:8px;letter-spacing:1px;}
 </style>
 </head>
 <body>
 <div id="app">
   <header>
     <div class="header-left">
-      <span style="font-size:24px">🏸</span>
+      <span style="font-size:22px">🏸</span>
       <h1>Shuttle Squad</h1>
       <div class="live-dot" id="live-dot"></div>
     </div>
-    <div class="session-pill" id="session-pill"></div>
+    <div class="header-right">
+      <div class="session-pill" id="session-pill"></div>
+      <div class="me-avatar" id="me-avatar" onclick="showTab('me')" title="My Profile" style="display:none"></div>
+    </div>
   </header>
 
   <div class="nav">
     <button class="nav-btn active" onclick="showTab('match')">🏸 Match</button>
-    <button class="nav-btn" onclick="showTab('history')">📅 History</button>
-    <button class="nav-btn" onclick="showTab('leaderboard')">🏆 Leaders</button>
+    <button class="nav-btn" onclick="showTab('history')">📅 Days</button>
+    <button class="nav-btn" onclick="showTab('leaderboard')">🏆 Board</button>
     <button class="nav-btn" onclick="showTab('timeline')">⚡ Live</button>
     <button class="nav-btn" onclick="showTab('setup')">⚙️ Setup</button>
   </div>
 
   <!-- ══ SETUP TAB ══ -->
   <div class="screen active" id="tab-setup">
-    <!-- Session join/host -->
-    <div class="card">
+    <div class="card" style="margin-top:13px">
       <div class="card-title">🔗 Live Session</div>
-      <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;line-height:1.6">Host creates a session code. Others join to see live match updates on their phone.</p>
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;line-height:1.6">Host creates a code. Others join to see live updates.</p>
       <button class="btn btn-primary" onclick="hostSession()" style="margin-bottom:9px">📡 Host New Session</button>
       <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:9px">
         <div style="flex:1">
@@ -245,11 +381,8 @@ select option{background:var(--surface2);}
         </div>
         <button class="btn btn-secondary btn-sm" onclick="joinSession()" style="margin-bottom:0;padding:11px 16px">Join</button>
       </div>
-      <!-- Leave button — shown only when in a live session -->
       <button class="btn btn-outline btn-sm" id="leave-btn" onclick="leaveSession()" style="width:100%;display:none">🚪 Leave Session</button>
     </div>
-
-    <!-- Player setup -->
     <div class="card">
       <div class="card-title">Player Setup</div>
       <label>Number of Players</label>
@@ -275,35 +408,24 @@ select option{background:var(--surface2);}
       <button class="btn btn-primary" style="width:auto;padding:12px 28px" onclick="showTab('setup')">Go to Setup</button>
     </div>
     <div id="match-content" style="display:none">
-      <!-- Viewer badge shown to joiners -->
       <div class="viewer-info" id="viewer-info" style="display:none">👀 You're watching live — only the host can control the match</div>
-
       <div class="match-header">
         <div class="match-title" id="match-title">Match 1</div>
         <div class="bet-badge" id="bet-badge">₹50 / match</div>
       </div>
-
       <div class="players-bar">
         <div class="pbar-title">Players</div>
         <div class="pbar-list" id="players-bar"></div>
       </div>
-
-      <!-- Teams rendered here dynamically (2-team or multi-team) -->
       <div id="teams-container"></div>
-
-      <!-- Bench (odd players only) -->
       <div class="bench-section" id="bench-section" style="display:none">
         <div class="bench-title">⏳ On Bench</div>
         <div class="bench-list" id="bench-list"></div>
       </div>
-
-      <!-- Next up queue (even mode: waiting teams) -->
       <div class="next-up-section" id="next-up-section" style="display:none">
         <div class="next-up-title">⏳ Waiting to Play</div>
         <div class="next-up-list" id="next-up-list"></div>
       </div>
-
-      <!-- State: setup -->
       <div id="state-setup">
         <div class="action-row">
           <button class="btn btn-secondary btn-sm" id="reteam-btn" onclick="reteam()">🔀 Re-team</button>
@@ -312,44 +434,55 @@ select option{background:var(--surface2);}
         <input type="number" id="bet-input" value="50" style="margin-bottom:11px">
         <button class="btn btn-primary" id="start-btn" onclick="startPlaying()">▶ Start Match</button>
       </div>
-
-      <!-- State: playing -->
       <div id="state-playing" style="display:none">
         <div class="playing-hint" id="playing-hint">Match in progress — tap the winning team!</div>
         <div class="win-btns" id="win-btns"></div>
       </div>
-
-      <!-- State: result -->
       <div id="state-result" style="display:none">
         <div class="pay-picker" id="pay-picker"></div>
         <div class="bet-result" id="bet-result"></div>
         <button class="btn btn-primary" id="next-match-btn" onclick="nextMatch()">+ Next Match</button>
       </div>
-
+      <!-- Session Money Tracker -->
+      <div class="money-section" id="money-section" style="display:none">
+        <div class="money-header" style="cursor:default">
+          <div class="money-title">💰 Session Balance</div>
+          <div class="money-net-badge zero" id="money-net-badge">—</div>
+        </div>
+        <div class="money-player-strip" id="money-player-strip"></div>
+        <div id="money-card-wrap"></div>
+      </div>
       <div class="sess-hist" id="sess-hist" style="display:none">
-        <div class="sess-hist-title">This Session</div>
-        <div id="sess-hist-list"></div>
+        <div class="sess-hist-title" onclick="toggleSessHist()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none">
+          <span>This Session</span>
+          <span id="sess-hist-chevron" style="font-size:.8rem;color:var(--muted);transition:transform .2s">▼</span>
+        </div>
+        <div id="sess-hist-list" style="display:none"></div>
       </div>
     </div>
   </div>
 
-  <!-- ══ HISTORY TAB ══ -->
+  <!-- ══ HISTORY / CALENDAR TAB ══ -->
   <div class="screen" id="tab-history">
     <div style="margin-top:13px">
-      <div class="session-filter">
-        <label>Filter by Date</label>
-        <select id="hist-filter" onchange="renderHistory()"><option value="all">All Sessions</option></select>
+      <div class="card" style="padding:16px">
+        <div class="cal-header">
+          <div class="cal-title">📅 Play Activity</div>
+          <div class="cal-streak" id="cal-streak-display">🔥 0 week streak</div>
+        </div>
+        <div id="cal-container"></div>
       </div>
-      <div id="hist-content"></div>
+      <div id="sess-detail-container"></div>
     </div>
   </div>
 
   <!-- ══ LEADERBOARD TAB ══ -->
   <div class="screen" id="tab-leaderboard">
     <div style="margin-top:13px">
-      <div class="session-filter">
-        <label>Filter by Date</label>
-        <select id="lb-filter" onchange="renderLeaderboard()"><option value="all">All Time</option></select>
+      <div class="lb-filter-tabs">
+        <button class="lb-ftab active" onclick="setLbFilter('all',this)">All Time</button>
+        <button class="lb-ftab" onclick="setLbFilter('today',this)">Today</button>
+        <button class="lb-ftab" onclick="setLbFilter('week',this)">This Week</button>
       </div>
       <div id="lb-content"></div>
     </div>
@@ -365,6 +498,11 @@ select option{background:var(--surface2);}
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ══ MY PROFILE TAB ══ -->
+  <div class="screen" id="tab-me">
+    <div style="margin-top:13px" id="me-content"></div>
   </div>
 
 </div>
@@ -387,254 +525,164 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 // ═══════════════════════════════════════════════════════════
 
 const COLORS=['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF922B','#CC5DE8','#20C997','#F06595','#74C0FC','#A9E34B'];
-const SK='shuttle_squad_v4';
-const ROLE_KEY='shuttle_squad_role'; // persists role across refresh
+const SK='shuttle_squad_v7';
+const ROLE_KEY='shuttle_squad_role';
+const ME_KEY='shuttle_squad_me'; // which player am I?
 
 // ── LOCAL STATE ──
-let data=(() => {
-  try{const r=localStorage.getItem(SK);if(r)return JSON.parse(r);}catch(e){}
-  return{players:[],sessions:[],currentSession:null};
-})();
+let data=(() => {try{const r=localStorage.getItem(SK);if(r)return JSON.parse(r);}catch(e){}return{players:[],sessions:[],currentSession:null};})();
 function save(){try{localStorage.setItem(SK,JSON.stringify(data));}catch(e){}}
 
-// ── SESSION ROLE — persisted so refresh doesn't log out ──
-// Saved: { isHost, isViewer, liveCode }
-let roleData=(() => {
-  try{const r=localStorage.getItem(ROLE_KEY);if(r)return JSON.parse(r);}catch(e){}
-  return{isHost:true,isViewer:false,liveCode:null};
-})();
-let isHost=roleData.isHost, isViewer=roleData.isViewer, liveCode=roleData.liveCode;
+// ── WHO AM I ──
+let myName=localStorage.getItem(ME_KEY)||null; // player's own name
 
-function saveRole(){
-  try{localStorage.setItem(ROLE_KEY,JSON.stringify({isHost,isViewer,liveCode}));}catch(e){}
-}
-function clearRole(){
-  isHost=true;isViewer=false;liveCode=null;
-  try{localStorage.removeItem(ROLE_KEY);}catch(e){}
-}
+function saveMe(){if(myName)localStorage.setItem(ME_KEY,myName);else localStorage.removeItem(ME_KEY);}
+function myPlayerIdx(){return data.players.findIndex(p=>p.name===myName);}
+
+// ── SESSION ROLE ──
+let roleData=(() => {try{const r=localStorage.getItem(ROLE_KEY);if(r)return JSON.parse(r);}catch(e){}return{isHost:true,isViewer:false,liveCode:null};})();
+let isHost=roleData.isHost, isViewer=roleData.isViewer, liveCode=roleData.liveCode;
+function saveRole(){try{localStorage.setItem(ROLE_KEY,JSON.stringify({isHost,isViewer,liveCode}));}catch(e){}}
+function clearRole(){isHost=true;isViewer=false;liveCode=null;try{localStorage.removeItem(ROLE_KEY);}catch(e){}}
 
 // ── SUPABASE ──
 let db=null, realtimeChan=null;
 function initDb(){
-  if(SB_URL.startsWith('https')&&SB_KEY.startsWith('eyJ')){
-    try{db=supabase.createClient(SB_URL,SB_KEY);}catch(e){}
-  }
+  if(SB_URL.startsWith('https')&&SB_KEY.startsWith('eyJ')){try{db=supabase.createClient(SB_URL,SB_KEY);}catch(e){}}
 }
 
-// ── REALTIME via Broadcast (instant, no DB polling needed) ──
-// Host broadcasts state via channel. All subscribers receive instantly.
+// ── REALTIME ──
 function subscribeRealtime(code){
   if(!db) return;
   if(realtimeChan){try{db.removeChannel(realtimeChan);}catch(e){} realtimeChan=null;}
-
-  realtimeChan = db.channel('room_'+code, {
-    config:{ broadcast:{ self:false } }
-  });
-
-  // Everyone (host + viewers) listens for state updates
-  realtimeChan.on('broadcast', {event:'state_update'}, ({payload}) => {
+  realtimeChan=db.channel('room_'+code,{config:{broadcast:{self:false}}});
+  realtimeChan.on('broadcast',{event:'state_update'},({payload})=>{
     if(!payload) return;
-    const newState = payload.currentSession;
-    const newPlayers = payload.players;
-    const newSessions = payload.sessions;
-    const newTl = payload.tlEvents;
-    if(newState){
-      data.currentSession = newState;
-      data.players = newPlayers;
-      if(newSessions) data.sessions = newSessions;
-      if(newTl){ tlEvents=newTl; saveTl(); }
-      save();
-      renderMatchTab();
-      // Refresh live tabs if open
-      const activePg=document.querySelector('.screen.active');
-      if(activePg){
-        if(activePg.id==='tab-history'){populateFilters();renderHistory();}
-        if(activePg.id==='tab-leaderboard'){populateFilters();renderLeaderboard();}
-        if(activePg.id==='tab-timeline') renderTimeline();
-      }
-      // Flash the live dot
-      const dot=document.getElementById('live-dot');
-      dot.style.background='#fff';
-      setTimeout(()=>{dot.style.background='';},300);
+    if(payload.currentSession) data.currentSession=payload.currentSession;
+    if(payload.players) data.players=payload.players;
+    if(payload.sessions) data.sessions=payload.sessions;
+    if(payload.tlEvents){tlEvents=payload.tlEvents;saveTl();}
+    save();
+    renderMatchTab();
+    renderMoneyTracker();
+    const activePg=document.querySelector('.screen.active');
+    if(activePg){
+      if(activePg.id==='tab-history') renderCalendar();
+      if(activePg.id==='tab-leaderboard') renderLeaderboard();
+      if(activePg.id==='tab-timeline') renderTimeline();
+      if(activePg.id==='tab-me') renderMyProfile();
     }
+    const dot=document.getElementById('live-dot');
+    dot.style.background='#fff';setTimeout(()=>{dot.style.background='';},300);
   });
-
-  realtimeChan.subscribe((status)=>{
-    if(status==='SUBSCRIBED'){
-      document.getElementById('live-dot').classList.add('on');
-      updateSessionPillUI();
-    }
+  realtimeChan.subscribe(status=>{
+    if(status==='SUBSCRIBED'){document.getElementById('live-dot').classList.add('on');updateSessionPillUI();}
   });
 }
 
-// Host calls this after every state change to broadcast to all viewers instantly
 async function pushState(){
   if(!db||!liveCode||!realtimeChan) return;
-
-  // 1. Broadcast via Realtime (instant — viewers get this in <200ms)
-  try{
-    await realtimeChan.send({
-      type:'broadcast',
-      event:'state_update',
-      payload:{
-        currentSession: data.currentSession,
-        players: data.players,
-        sessions: data.sessions,       // ← so viewers get history & leaderboard
-        tlEvents: tlEvents             // ← so viewers get live timeline
-      }
-    });
-  }catch(e){}
-
-  // 2. Also persist to DB so new joiners get current state when they join
-  try{
-    await db.from('live_sessions').upsert({
-      code:liveCode,
-      state:JSON.stringify(data.currentSession),
-      players:JSON.stringify(data.players),
-      sessions:JSON.stringify(data.sessions),
-      tl:JSON.stringify(tlEvents),
-      updated_at:new Date().toISOString()
-    },{onConflict:'code'});
-  }catch(e){}
+  try{await realtimeChan.send({type:'broadcast',event:'state_update',payload:{currentSession:data.currentSession,players:data.players,sessions:data.sessions,tlEvents}});}catch(e){}
+  try{await db.from('live_sessions').upsert({code:liveCode,state:JSON.stringify(data.currentSession),players:JSON.stringify(data.players),sessions:JSON.stringify(data.sessions),tl:JSON.stringify(tlEvents),updated_at:new Date().toISOString()},{onConflict:'code'});}catch(e){}
 }
 
-// Push completed match record to history table
 async function pushMatchRecord(record){
   if(!db) return;
-  try{
-    await db.from('matches').insert({
-      session_date:record.date,
-      match_num:record.matchNum,
-      team_a:JSON.stringify(record.teamA.map(i=>data.players[i]?.name)),
-      team_b:JSON.stringify(record.teamB.map(i=>data.players[i]?.name)),
-      winner:record.winner,
-      bet:record.bet,
-      payments:JSON.stringify(record.payments),
-      players_snapshot:JSON.stringify(data.players)
-    });
-  }catch(e){}
+  try{await db.from('matches').insert({session_date:record.date,match_num:record.matchNum,team_a:JSON.stringify(record.teamA.map(i=>data.players[i]?.name)),team_b:JSON.stringify(record.teamB.map(i=>data.players[i]?.name)),winner:record.winner,bet:record.bet,payments:JSON.stringify(record.payments),players_snapshot:JSON.stringify(data.players)});}catch(e){}
 }
 
-// ── TIMELINE EVENT LOG ──
-// Persisted separately so it survives refresh
-const TL_KEY='shuttle_squad_timeline';
+// ── TIMELINE ──
+const TL_KEY='shuttle_squad_tl';
 let tlEvents=(()=>{try{const r=localStorage.getItem(TL_KEY);if(r)return JSON.parse(r);}catch(e){}return[];})();
 function saveTl(){try{localStorage.setItem(TL_KEY,JSON.stringify(tlEvents));}catch(e){}}
-
-function addEvent(type, title, sub=''){
+function addEvent(type,title,sub=''){
   const now=new Date();
   const time=now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
   tlEvents.unshift({type,title,sub,time,ts:now.getTime()});
-  if(tlEvents.length>50) tlEvents=tlEvents.slice(0,50); // keep last 50
+  if(tlEvents.length>60)tlEvents=tlEvents.slice(0,60);
   saveTl();
 }
-
 function renderTimeline(){
-  const cont=document.getElementById('timeline-content');
-  if(!cont) return;
+  const cont=document.getElementById('timeline-content');if(!cont)return;
   if(!tlEvents.length){cont.innerHTML='<div class="tl-empty">No events yet. Start a match!</div>';return;}
   const icons={win:'🏆',start:'▶️',pay:'💸',info:'📋',join:'🔗',next:'⏭️'};
   cont.innerHTML=tlEvents.map(e=>`
     <div class="tl-item">
-      <div class="tl-dot ${e.type==='win'?'win':e.type==='start'?'start':e.type==='pay'?'pay':'info'}">${icons[e.type]||'📋'}</div>
-      <div class="tl-body">
-        <div class="tl-title">${e.title}</div>
-        ${e.sub?`<div class="tl-sub">${e.sub}</div>`:''}
-      </div>
+      <div class="tl-dot ${['win','start','pay'].includes(e.type)?e.type:'info'}">${icons[e.type]||'📋'}</div>
+      <div class="tl-body"><div class="tl-title">${e.title}</div>${e.sub?`<div class="tl-sub">${e.sub}</div>`:''}</div>
       <div class="tl-time">${e.time}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
-function generateCode(){return 'SS-'+Math.floor(1000+Math.random()*9000);}
 
+// ── SESSION CODE ──
+function generateCode(){return 'SS-'+Math.floor(1000+Math.random()*9000);}
 function updateSessionPillUI(){
   const pill=document.getElementById('session-pill');
-  if(liveCode){
-    pill.textContent = isViewer ? liveCode+' 👀' : liveCode;
-    pill.classList.add('on');
-  } else {
-    pill.classList.remove('on');
-  }
+  if(liveCode){pill.textContent=isViewer?liveCode+' 👀':liveCode;pill.classList.add('on');}
+  else pill.classList.remove('on');
 }
 
 async function hostSession(){
   if(!data.currentSession){showToast('Start a session first in Player Setup');return;}
   if(!db){showToast('Cloud not connected — check credentials in code');return;}
-  liveCode=generateCode();
-  isHost=true; isViewer=false;
-  saveRole();
-  updateSessionPillUI();
-  const playerNames=data.players.map(p=>p.name).join(', ');
-  addEvent('info','Session '+liveCode+' started','Players: '+playerNames);
+  liveCode=generateCode();isHost=true;isViewer=false;saveRole();updateSessionPillUI();
+  addEvent('info','Session '+liveCode+' started','Players: '+data.players.map(p=>p.name).join(', '));
   subscribeRealtime(liveCode);
   await pushState();
-  showModal('Session Live! 🏸',
-    `Share this code with your friends:<div style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:6px;color:var(--accent2);text-align:center;padding:14px 0">${liveCode}</div>They open the app → Setup → type the code → Join`,
-    [{label:'Got it!',cls:'btn btn-primary',fn:closeModal}]
-  );
+  showModal('Session Live! 🏸',`Share this code:<div style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:6px;color:var(--accent2);text-align:center;padding:14px 0">${liveCode}</div>Others: Setup → Enter code → Join`,[{label:'Got it!',cls:'btn btn-primary',fn:closeModal}]);
 }
 
 async function joinSession(){
   const code=document.getElementById('join-code-input').value.trim().toUpperCase();
   if(!code.startsWith('SS-')||code.length<6){showToast('Enter a valid code like SS-4821');return;}
-  if(!db){showToast('Cloud not connected — check credentials');return;}
+  if(!db){showToast('Cloud not connected');return;}
   try{
     const{data:rows,error}=await db.from('live_sessions').select('*').eq('code',code).single();
-    if(error||!rows){showToast('Code not found or expired');return;}
-    const sessionState=JSON.parse(rows.state||'null');
-    const players=JSON.parse(rows.players||'[]');
-    const sessions=JSON.parse(rows.sessions||'[]');
-    const tl=JSON.parse(rows.tl||'[]');
-    if(!sessionState){showToast('Session has no active match yet');return;}
-    data.currentSession=sessionState;
-    data.players=players;
-    data.sessions=sessions;
-    tlEvents=tl;
-    saveTl();
-    isViewer=true; isHost=false; liveCode=code;
-    saveRole();
-    save();
-    updateSessionPillUI();
-    subscribeRealtime(code);
-    addEvent('join','Joined session '+code,'You are now watching live');
-    showTab('match');
-    showToast('Joined '+code+' — watching live 🏸');
+    if(error||!rows){showToast('Code not found');return;}
+    const st=JSON.parse(rows.state||'null');
+    if(!st){showToast('Session has no active match yet');return;}
+    data.currentSession=st;
+    data.players=JSON.parse(rows.players||'[]');
+    data.sessions=JSON.parse(rows.sessions||'[]');
+    tlEvents=JSON.parse(rows.tl||'[]');saveTl();
+    isViewer=true;isHost=false;liveCode=code;saveRole();save();
+    updateSessionPillUI();subscribeRealtime(code);
+    addEvent('join','Joined '+code,'Watching live');
+    showTab('match');showToast('Joined '+code+' 🏸');
   }catch(e){showToast('Failed to join — check code');}
 }
 
 function leaveSession(){
-  showModal('Leave Session?','You will stop watching live. You can rejoin anytime with the same code.',[
+  showModal('Leave Session?','Stop watching. You can rejoin anytime.',[
     {label:'Leave',cls:'btn btn-danger',fn:()=>{
       if(realtimeChan){try{db.removeChannel(realtimeChan);}catch(e){} realtimeChan=null;}
-      clearRole();
-      updateSessionPillUI();
+      clearRole();updateSessionPillUI();
       document.getElementById('live-dot').classList.remove('on');
-      closeModal();
-      showToast('Left session');
-      renderMatchTab();
+      closeModal();showToast('Left session');renderMatchTab();
     }},
     {label:'Stay',cls:'btn btn-secondary',fn:closeModal}
   ]);
 }
 
 // ── TABS ──
-const TAB_ORDER=['match','history','leaderboard','timeline','setup'];
+const TAB_ORDER=['match','history','leaderboard','timeline','me','setup'];
 function showTab(tab){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  const el=document.getElementById('tab-'+tab);
-  if(el) el.classList.add('active');
-  const idx=TAB_ORDER.indexOf(tab);
+  const el=document.getElementById('tab-'+tab);if(el)el.classList.add('active');
+  // Nav only has 5 visible buttons (not 'me')
+  const navOrder=['match','history','leaderboard','timeline','setup'];
+  const ni=navOrder.indexOf(tab);
   const btns=document.querySelectorAll('.nav-btn');
-  if(idx>=0&&btns[idx]) btns[idx].classList.add('active');
-  if(tab==='match') renderMatchTab();
-  if(tab==='history'){populateFilters();renderHistory();}
-  if(tab==='leaderboard'){populateFilters();renderLeaderboard();}
-  if(tab==='timeline') renderTimeline();
+  if(ni>=0&&btns[ni])btns[ni].classList.add('active');
+  if(tab==='match')renderMatchTab();
+  if(tab==='history')renderCalendar();
+  if(tab==='leaderboard')renderLeaderboard();
+  if(tab==='timeline')renderTimeline();
+  if(tab==='me')renderMyProfile();
   if(tab==='setup'){
     document.getElementById('danger-card').style.display=data.players.length?'block':'none';
-    const leaveBtn=document.getElementById('leave-btn');
-    if(leaveBtn) leaveBtn.style.display=liveCode?'block':'none';
+    const lb=document.getElementById('leave-btn');if(lb)lb.style.display=liveCode?'block':'none';
   }
 }
 
@@ -659,37 +707,29 @@ function startSession(){
     const name=document.getElementById(`pn-${i}`)?.value.trim()||`P${i+1}`;
     data.players.push({name,color:COLORS[i]});
   }
-  // ── EVEN vs ODD logic ──
   const isEven=(n%2===0);
   const sh=shuffle(data.players.map((_,i)=>i));
   let teamA,teamB,bench=[],waitingTeams=[];
-
   if(isEven){
-    // Split ALL players into n/2 teams of 2
-    // First 2 play, rest wait in queue
     const teams=[];
-    for(let t=0;t<n/2;t++) teams.push([sh[t*2],sh[t*2+1]]);
-    teamA=teams[0]; teamB=teams[1];
-    waitingTeams=teams.slice(2); // queue
-    bench=[];
+    for(let t=0;t<n/2;t++)teams.push([sh[t*2],sh[t*2+1]]);
+    teamA=teams[0];teamB=teams[1];waitingTeams=teams.slice(2);bench=[];
   } else {
-    // Odd: pick 4 to play, rest bench
-    teamA=[sh[0],sh[1]]; teamB=[sh[2],sh[3]]; bench=sh.slice(4);
+    teamA=[sh[0],sh[1]];teamB=[sh[2],sh[3]];bench=sh.slice(4);
   }
-
   data.currentSession={
-    date:today(), matchNum:1, isEven,
-    teamA, teamB, bench, waitingTeams,
-    state:'setup', bet:50, winner:null,
-    payments:[], payAssign:null, history:[]
+    date:today(),matchNum:1,isEven,teamA,teamB,bench,waitingTeams,
+    state:'setup',bet:50,winner:null,payments:[],payAssign:null,history:[],
+    sessionTxns:[] // ← per-transaction money tracker
   };
-  isHost=true; isViewer=false;
-  save(); showTab('match'); showToast('Session started! 🏸');
+  isHost=true;isViewer=false;
+  updateMeAvatar();
+  save();showTab('match');showToast('Session started! 🏸');
 }
 
 function confirmReset(){
   showModal('Reset All Data?','This clears all local players, sessions and history.',[
-    {label:'Reset',cls:'btn btn-danger',fn:()=>{data={players:[],sessions:[],currentSession:null};save();closeModal();showTab('match');showToast('Data cleared');}},
+    {label:'Reset',cls:'btn btn-danger',fn:()=>{data={players:[],sessions:[],currentSession:null};save();closeModal();showTab('match');showToast('Cleared');}},
     {label:'Cancel',cls:'btn btn-secondary',fn:closeModal}
   ]);
 }
@@ -703,38 +743,18 @@ function renderMatchTab(){
   document.getElementById('match-title').textContent=`Match ${cs.matchNum}`;
   document.getElementById('bet-badge').textContent=`₹${cs.bet} / match`;
   document.getElementById('bet-input').value=cs.bet;
-
-  // Viewer badge
   document.getElementById('viewer-info').style.display=isViewer?'block':'none';
-
-  renderPlayersBar();
-  renderTeamsContainer();
-  renderBenchOrQueue();
-  renderStateUI();
-  renderSessHist();
-
-  // Re-team only for first match in odd mode, host only
+  renderPlayersBar();renderTeamsContainer();renderBenchOrQueue();renderStateUI();renderSessHist();renderMoneyTracker();
   const reteamBtn=document.getElementById('reteam-btn');
   reteamBtn.style.display=(!isViewer&&!cs.isEven&&cs.history.length===0&&cs.state==='setup')?'inline-flex':'none';
-
-  // Hide host-only controls for viewers
-  const setupControls=document.getElementById('state-setup');
-  if(setupControls){
-    // Bet input and start button hidden from viewers; show view-only status instead
-    document.getElementById('bet-input').style.display=isViewer?'none':'block';
-    document.querySelector('label[for-bet]')&&(document.querySelector('label[for-bet]').style.display=isViewer?'none':'block');
-    document.getElementById('start-btn').style.display=isViewer?'none':'block';
-  }
+  document.getElementById('bet-input').style.display=isViewer?'none':'block';
+  document.getElementById('start-btn').style.display=isViewer?'none':'block';
 }
 
 function lockViewerControls(){
-  // Called after rendering win buttons / pay picker so those elements exist
-  if(!isViewer) return;
-  document.querySelectorAll('.win-btn,.paid-btn,.ppr-sel').forEach(el=>{
-    el.disabled=true;el.style.opacity='0.5';el.style.cursor='not-allowed';
-  });
-  const nb=document.getElementById('next-match-btn');
-  if(nb){nb.disabled=true;nb.style.opacity='0.5';}
+  if(!isViewer)return;
+  document.querySelectorAll('.win-btn,.paid-btn,.ppr-sel,.iou-pay-btn').forEach(el=>{el.disabled=true;el.style.opacity='0.5';el.style.cursor='not-allowed';});
+  const nb=document.getElementById('next-match-btn');if(nb){nb.disabled=true;nb.style.opacity='0.5';}
 }
 
 function renderPlayersBar(){
@@ -748,26 +768,18 @@ function renderPlayersBar(){
   });
 }
 
-// Build team card HTML
-function teamCardHTML(indices, label, extraClass=''){
+function teamCardHTML(indices,label,extraClass=''){
   const avatars=indices.map(idx=>{
     const p=data.players[idx];if(!p)return '';
     return `<div class="p-avatar"><div class="p-circle" style="background:${p.color};color:#fff">${p.name[0].toUpperCase()}</div><div class="p-name">${p.name}</div></div>`;
   }).join('');
-  return `<div class="team-card ${extraClass}" id="tc-${label}"><div class="team-label">${label}</div><div class="team-avatars">${avatars}</div></div>`;
+  return `<div class="team-card ${extraClass}"><div class="team-label">${label}</div><div class="team-avatars">${avatars}</div></div>`;
 }
 
 function renderTeamsContainer(){
-  const cs=data.currentSession;const cont=document.getElementById('teams-container');
-  cont.innerHTML='';
-
+  const cs=data.currentSession;const cont=document.getElementById('teams-container');cont.innerHTML='';
   let aClass='',bClass='';
-  if(cs.state==='result'&&cs.winner){
-    aClass=cs.winner==='A'?'win':'lose';
-    bClass=cs.winner==='B'?'win':'lose';
-  }
-
-  // Always show current 2 playing teams as 2-col grid
+  if(cs.state==='result'&&cs.winner){aClass=cs.winner==='A'?'win':'lose';bClass=cs.winner==='B'?'win':'lose';}
   const grid=document.createElement('div');grid.className='scoreboard-2';
   grid.innerHTML=teamCardHTML(cs.teamA,'TEAM A',aClass)+'<div class="vs">VS</div>'+teamCardHTML(cs.teamB,'TEAM B',bClass);
   cont.appendChild(grid);
@@ -777,12 +789,10 @@ function renderBenchOrQueue(){
   const cs=data.currentSession;
   const benchSec=document.getElementById('bench-section');
   const nextSec=document.getElementById('next-up-section');
-
   if(cs.isEven){
-    // Even mode: show waiting teams queue
     benchSec.style.display='none';
     const waiting=cs.waitingTeams||[];
-    if(waiting.length===0){nextSec.style.display='none';return;}
+    if(!waiting.length){nextSec.style.display='none';return;}
     nextSec.style.display='block';
     const list=document.getElementById('next-up-list');list.innerHTML='';
     waiting.forEach((team,ti)=>{
@@ -792,12 +802,9 @@ function renderBenchOrQueue(){
         chip.innerHTML=`<div class="pbar-dot" style="background:${p.color}"></div><span>${p.name}</span>`;
         list.appendChild(chip);
       });
-      if(ti<waiting.length-1){
-        const sep=document.createElement('span');sep.textContent='·';sep.style.cssText='color:var(--border);font-size:1.2rem;';list.appendChild(sep);
-      }
+      if(ti<waiting.length-1){const sep=document.createElement('span');sep.textContent='·';sep.style.cssText='color:var(--border);font-size:1.2rem;';list.appendChild(sep);}
     });
   } else {
-    // Odd mode: show bench
     nextSec.style.display='none';
     if(!cs.bench||!cs.bench.length){benchSec.style.display='none';return;}
     benchSec.style.display='block';
@@ -816,32 +823,28 @@ function renderStateUI(){
   document.getElementById('state-setup').style.display=cs.state==='setup'?'block':'none';
   document.getElementById('state-playing').style.display=cs.state==='playing'?'block':'none';
   document.getElementById('state-result').style.display=cs.state==='result'?'block':'none';
-  if(cs.state==='playing') renderWinButtons();
-  if(cs.state==='result') renderResult();
-  lockViewerControls(); // always called after rendering
+  if(cs.state==='playing')renderWinButtons();
+  if(cs.state==='result')renderResult();
+  lockViewerControls();
 }
 
 function renderWinButtons(){
-  const cs=data.currentSession;
-  const cont=document.getElementById('win-btns');cont.innerHTML='';
-  // Build win buttons for both teams
+  const cs=data.currentSession;const cont=document.getElementById('win-btns');cont.innerHTML='';
   [['A',cs.teamA],['B',cs.teamB]].forEach(([label,indices])=>{
     const names=indices.map(i=>data.players[i]?.name||'?').join(' & ');
     const btn=document.createElement('button');btn.className='win-btn';
-    btn.textContent=`🏆 ${names} Won (Team ${label})`;
+    btn.textContent=`🏆 ${names} Won`;
     btn.onclick=()=>declareWinner(label);
     cont.appendChild(btn);
   });
 }
 
-// ── RESULT + PAY PICKER ──
 function renderResult(){
   const cs=data.currentSession;
   const winIdx=cs.winner==='A'?cs.teamA:cs.teamB;
   const loseIdx=cs.winner==='A'?cs.teamB:cs.teamA;
   const perLoser=Math.round(cs.bet/loseIdx.length);
   if(!cs.payAssign){cs.payAssign=loseIdx.map((lI,i)=>({loserIdx:lI,toIdx:winIdx[i%winIdx.length]}));save();}
-
   const picker=document.getElementById('pay-picker');
   picker.innerHTML=`<div class="pay-picker-title">💸 Who pays whom?</div><div class="pay-picker-sub">Each loser pays ₹${perLoser} to their chosen winner.</div>`;
   cs.payAssign.forEach((row,i)=>{
@@ -857,8 +860,7 @@ function renderResult(){
 function updatePayTo(i,toIdx){
   if(isViewer)return;
   data.currentSession.payAssign[i].toIdx=toIdx;
-  save();buildSettlement();
-  if(liveCode) pushState();
+  save();buildSettlement();if(liveCode)pushState();
 }
 
 function buildSettlement(){
@@ -868,27 +870,256 @@ function buildSettlement(){
   const perLoser=Math.round(cs.bet/loseIdx.length);
   const winNames=winIdx.map(i=>data.players[i]?.name||'?');
   cs.payments=cs.payAssign.map((row,i)=>({from:data.players[row.loserIdx]?.name||'?',to:data.players[row.toIdx]?.name||'?',amount:perLoser,paid:cs.payments[i]?.paid||false}));
+  // ── Write to permanent txn log (append-only, idempotent) ──
+  commitMatchTxns();
   save();
   const div=document.getElementById('bet-result');
   div.innerHTML=`<div class="bet-result-title">✅ Settlement — ₹${cs.bet}</div><div class="bet-winner-line">🏆 ${winNames.join(' & ')} won!</div>`;
-  cs.payments.forEach((pay,i)=>{const row=document.createElement('div');row.className='pay-row';row.innerHTML=`<span class="pay-names"><strong>${pay.from}</strong><span class="pay-arrow">→</span><strong>${pay.to}</strong></span><span class="amount-tag">₹${pay.amount}</span><button class="paid-btn ${pay.paid?'done':''}" onclick="markPaid(${i})">${pay.paid?'✓ Paid':'Mark Paid'}</button>`;div.appendChild(row);});
+  cs.payments.forEach((pay,i)=>{
+    const row=document.createElement('div');row.className='pay-row';
+    row.innerHTML=`<span class="pay-names"><strong>${pay.from}</strong><span class="pay-arrow">→</span><strong>${pay.to}</strong></span><span class="amount-tag">₹${pay.amount}</span><button class="paid-btn ${pay.paid?'done':''}" onclick="markPaid(${i})">${pay.paid?'✓ Paid':'Mark Paid'}</button>`;
+    div.appendChild(row);
+  });
 }
 
 function markPaid(i){
   if(isViewer)return;
-  const cs=data.currentSession;cs.payments[i].paid=!cs.payments[i].paid;
-  const sess=data.sessions.find(s=>s.date===cs.date);if(sess){const m=sess.matches.find(m=>m.matchNum===cs.matchNum);if(m&&m.payments[i])m.payments[i].paid=cs.payments[i].paid;}
+  const cs=data.currentSession;
+  cs.payments[i].paid=!cs.payments[i].paid;
   const pay=cs.payments[i];
-  if(pay.paid) addEvent('pay',`${pay.from} paid ${pay.to}`,`₹${pay.amount} settled ✓`);
-  save();buildSettlement();
-  if(liveCode) pushState();
+  // Toggle the same txn in the permanent log
+  const key=`${pay.from}→${pay.to}:M${cs.matchNum}`;
+  const t=(cs.sessionTxns||[]).find(x=>x.key===key);
+  if(t)t.paid=pay.paid;
+  // Keep stored session in sync
+  const sess=data.sessions.find(s=>s.date===cs.date);
+  if(sess){const m=sess.matches.find(m=>m.matchNum===cs.matchNum);if(m&&m.payments[i])m.payments[i].paid=pay.paid;}
+  if(pay.paid)addEvent('pay',`${pay.from} paid ${pay.to}`,`₹${pay.amount} settled ✓`);
+  save();buildSettlement();renderMoneyTracker();
+  if(liveCode)pushState();
+}
+
+// ══════════════════════════════════════════════════════
+// SESSION MONEY TRACKER — append-only permanent log
+// ══════════════════════════════════════════════════════
+// cs.sessionTxns is NEVER rebuilt from scratch after being written.
+// It is only APPENDED to when a match result is confirmed.
+// Paid status is toggled directly on the txn object and saved.
+// This makes it a true non-overwritable session ledger.
+
+let moneyViewPlayer=null;
+
+// Called once when a match result is finalised (from buildSettlement)
+// Adds new txns for this match if not already present
+function commitMatchTxns(){
+  const cs=data.currentSession;
+  if(!cs||!cs.payments||!cs.payments.length)return;
+  if(!cs.sessionTxns)cs.sessionTxns=[];
+  cs.payments.forEach(pay=>{
+    const key=`${pay.from}→${pay.to}:M${cs.matchNum}`;
+    // Only add if not already in log (idempotent)
+    if(!cs.sessionTxns.find(t=>t.key===key)){
+      cs.sessionTxns.push({key,from:pay.from,to:pay.to,amount:pay.amount,matchNum:cs.matchNum,paid:pay.paid||false});
+    }
+  });
+}
+
+// Keep rebuildSessionIOUs as a no-op alias so old callers don't break
+function rebuildSessionIOUs(){ /* no-op — log is append-only now */ }
+
+
+function renderMoneyTracker(){
+  const cs=data.currentSession;
+  const sec=document.getElementById('money-section');
+  if(!sec)return;
+  // Show the section as soon as there's a session with players — no need to wait for debt
+  if(!cs||!data.players.length){sec.style.display='none';return;}
+  sec.style.display='block';
+
+  const strip=document.getElementById('money-player-strip');
+  const wrap=document.getElementById('money-card-wrap');
+  const netBadge=document.getElementById('money-net-badge');
+  if(!strip||!wrap)return;
+
+  // Show ALL session players as chips — always visible once session has players
+  strip.innerHTML=data.players.map(p=>{
+    const isActive=moneyViewPlayer===p.name;
+    return `<button class="money-player-btn${isActive?' active':''}"
+      style="${isActive?`background:${p.color};color:#0d0d0f;border-color:${p.color};`:''}font-weight:600"
+      onclick="setMoneyPlayer('${p.name}')">
+      <div class="mp-dot" style="background:${p.color}"></div>${p.name}
+    </button>`;
+  }).join('');
+
+  // No player selected — show hint, hide card
+  if(!moneyViewPlayer){
+    wrap.innerHTML=`<div style="text-align:center;color:var(--muted);font-size:.8rem;padding:12px 0">Tap a player to see their balance ↑</div>`;
+    netBadge.className='money-net-badge zero';netBadge.textContent='—';
+    return;
+  }
+
+  const vp=moneyViewPlayer;
+  const txns=cs.sessionTxns||[];
+
+  // All transactions where vp pays someone (PAYS TO)
+  const paysTo=txns.filter(t=>t.from===vp);
+  // All transactions where someone pays vp (RECEIVES FROM)
+  const recvFrom=txns.filter(t=>t.to===vp);
+
+  const totalPays=paysTo.reduce((s,t)=>s+(t.paid?0:t.amount),0);
+  const totalRecv=recvFrom.reduce((s,t)=>s+(t.paid?0:t.amount),0);
+  const net=totalRecv-totalPays;
+  // Net includes ALL (paid and unpaid) for actual balance
+  const netAll=recvFrom.reduce((s,t)=>s+t.amount,0)-paysTo.reduce((s,t)=>s+t.amount,0);
+
+  // Net badge
+  if(net>0){netBadge.className='money-net-badge pos';netBadge.textContent=`+₹${Math.round(net)}`;}
+  else if(net<0){netBadge.className='money-net-badge neg';netBadge.textContent=`-₹${Math.abs(Math.round(net))}`;}
+  else{netBadge.className='money-net-badge zero';netBadge.textContent='✓ Settled';}
+
+  if(!paysTo.length&&!recvFrom.length){
+    wrap.innerHTML=`<div class="money-card"><div class="money-card-section"><div class="money-empty" style="padding:16px 0;color:var(--muted);font-size:.84rem;text-align:center">${vp} has no transactions this session yet.</div></div></div>`;
+    return;
+  }
+
+  let html='<div class="money-card">';
+
+  // ── RECEIVES FROM ──
+  if(recvFrom.length){
+    const pendingRecv=recvFrom.filter(t=>!t.paid);
+    const paidRecv=recvFrom.filter(t=>t.paid);
+    html+=`<div class="money-card-section">
+      <div class="mcs-label" style="color:var(--green)">💰 Receives From</div>`;
+
+    recvFrom.forEach(t=>{
+      const fromP=data.players.find(p=>p.name===t.from);
+      html+=`<div class="mcs-txn-row ${t.paid?'txn-settled':''}">
+        <div class="mcs-txn-left">
+          <div class="mcs-dot" style="background:${fromP?.color||'#888'}"></div>
+          <span class="mcs-txn-name">${t.from}</span>
+          <span class="mcs-txn-match">M${t.matchNum}</span>
+        </div>
+        <div class="mcs-txn-right">
+          <span class="mcs-amt recv ${t.paid?'settled':''}">₹${t.amount}</span>
+          <span class="mcs-status-pill ${t.paid?'paid':'unpaid'}">${t.paid?'✓ Paid':'Unpaid'}</span>
+        </div>
+      </div>`;
+    });
+
+    if(recvFrom.length>1){
+      html+=`<div class="mcs-total-row">
+        <span>Pending</span>
+        <span style="color:var(--green);font-weight:700">₹${pendingRecv.reduce((s,t)=>s+t.amount,0)}</span>
+      </div>`;
+    }
+    html+='</div>';
+  }
+
+  // ── PAYS TO ──
+  if(paysTo.length){
+    const pendingPays=paysTo.filter(t=>!t.paid);
+    html+=`<div class="money-card-section">
+      <div class="mcs-label" style="color:var(--red)">💸 Pays To</div>`;
+
+    paysTo.forEach(t=>{
+      const toP=data.players.find(p=>p.name===t.to);
+      const isCurrentMatch=cs.state==='result'&&t.matchNum===cs.matchNum;
+      html+=`<div class="mcs-txn-row ${t.paid?'txn-settled':''}">
+        <div class="mcs-txn-left">
+          <div class="mcs-dot" style="background:${toP?.color||'#888'}"></div>
+          <span class="mcs-txn-name">${t.to}</span>
+          <span class="mcs-txn-match">M${t.matchNum}</span>
+        </div>
+        <div class="mcs-txn-right">
+          <span class="mcs-amt owe ${t.paid?'settled':''}">₹${t.amount}</span>
+          ${!isViewer?`<button class="mcs-pay-btn ${t.paid?'done':''}" onclick="toggleTxnPaid('${t.key}')">${t.paid?'✓ Paid':'Mark Paid'}</button>`:`<span class="mcs-status-pill ${t.paid?'paid':'unpaid'}">${t.paid?'✓ Paid':'Unpaid'}</span>`}
+        </div>
+      </div>`;
+    });
+
+    if(paysTo.length>1){
+      html+=`<div class="mcs-total-row">
+        <span>Still owe</span>
+        <span style="color:var(--red);font-weight:700">₹${pendingPays.reduce((s,t)=>s+t.amount,0)}</span>
+      </div>`;
+    }
+    html+='</div>';
+  }
+
+  // ── NET ──
+  const netCls=net>0?'pos':net<0?'neg':'zero';
+  const netStr=net>0?`+₹${Math.round(net)}`:net<0?`-₹${Math.abs(Math.round(net))}`:'₹0';
+  html+=`<div class="money-net-row" style="background:var(--surface2)">
+    <div style="display:flex;flex-direction:column">
+      <div class="money-net-label">Net Balance</div>
+      <div style="font-size:.65rem;color:var(--muted);margin-top:1px">(pending only)</div>
+    </div>
+    <div class="money-net-val ${netCls}">${netStr}</div>
+  </div>`;
+
+  html+='</div>';
+  wrap.innerHTML=html;
+  if(isViewer)lockViewerControls();
+}
+
+function setMoneyPlayer(name){
+  // Toggle: clicking the active player hides the card
+  if(moneyViewPlayer===name){moneyViewPlayer=null;}
+  else{moneyViewPlayer=name;}
+  renderMoneyTracker();
+}
+
+function toggleTxnPaid(key){
+  if(isViewer)return;
+  const cs=data.currentSession;if(!cs||!cs.sessionTxns)return;
+  const t=cs.sessionTxns.find(x=>x.key===key);if(!t)return;
+  t.paid=!t.paid;
+  // If this is the current match in result state, sync back to cs.payments UI
+  if(cs.state==='result'&&t.matchNum===cs.matchNum){
+    const pi=cs.payments.findIndex(p=>p.from===t.from&&p.to===t.to);
+    if(pi>=0)cs.payments[pi].paid=t.paid;
+  }
+  // Keep stored session in sync
+  const sess=data.sessions.find(s=>s.date===cs.date);
+  if(sess){const sm=sess.matches.find(m=>m.matchNum===t.matchNum);if(sm&&sm.payments){const hp=sm.payments.find(p=>p.from===t.from&&p.to===t.to);if(hp)hp.paid=t.paid;}}
+  if(t.paid)addEvent('pay',`${t.from} paid ${t.to}`,`₹${t.amount} · Match ${t.matchNum} settled ✓`);
+  save();buildSettlement();renderMoneyTracker();
+  if(liveCode)pushState();
+}
+
+function markSessionPaid(key){
+  // Legacy - now delegates to toggleTxnPaid
+  toggleTxnPaid(key);
 }
 
 function renderSessHist(){
   const cs=data.currentSession;const sec=document.getElementById('sess-hist');const list=document.getElementById('sess-hist-list');
   if(!cs.history||!cs.history.length){sec.style.display='none';return;}
-  sec.style.display='block';list.innerHTML='';
-  [...cs.history].reverse().forEach(m=>{const wt=(m.winner==='A'?m.teamA:m.teamB).map(i=>data.players[i]?.name||`P${i}`);const lt=(m.winner==='A'?m.teamB:m.teamA).map(i=>data.players[i]?.name||`P${i}`);const el=document.createElement('div');el.className='sess-hist-item';el.innerHTML=`<span style="color:var(--muted);font-size:.72rem;margin-right:7px">M${m.matchNum}</span><span style="flex:1"><span style="color:var(--green)">${wt.join(' & ')}</span> beat <span style="color:var(--muted)">${lt.join(' & ')}</span></span><span style="color:var(--accent2);font-size:.75rem">₹${m.bet}</span>`;list.appendChild(el);});
+  // Show the header/title but keep list collapsed — user clicks to expand
+  sec.style.display='block';
+  list.innerHTML='';
+  [...cs.history].reverse().forEach(m=>{
+    const wt=(m.winner==='A'?m.teamA:m.teamB).map(i=>data.players[i]?.name||`P${i}`);
+    const lt=(m.winner==='A'?m.teamB:m.teamA).map(i=>data.players[i]?.name||`P${i}`);
+    const el=document.createElement('div');el.className='sess-hist-item';
+    el.innerHTML=`<span style="color:var(--muted);font-size:.72rem;margin-right:7px">M${m.matchNum}</span><span style="flex:1"><span style="color:var(--green)">${wt.join(' & ')}</span> beat <span style="color:var(--muted)">${lt.join(' & ')}</span></span><span style="color:var(--accent2);font-size:.75rem">₹${m.bet}</span>`;
+    list.appendChild(el);
+  });
+  // Update chevron label to reflect current state
+  const chevron=document.getElementById('sess-hist-chevron');
+  const isOpen=list.style.display!=='none';
+  // Title shows match count when collapsed
+  const titleSpan=document.querySelector('#sess-hist .sess-hist-title span:first-child');
+  if(titleSpan)titleSpan.textContent=`This Session (${cs.history.length})`;
+}
+
+function toggleSessHist(){
+  const list=document.getElementById('sess-hist-list');
+  const chevron=document.getElementById('sess-hist-chevron');
+  if(!list)return;
+  const isOpen=list.style.display!=='none';
+  list.style.display=isOpen?'none':'block';
+  if(chevron)chevron.style.transform=isOpen?'':'rotate(180deg)';
 }
 
 // ── MATCH ACTIONS ──
@@ -897,8 +1128,7 @@ function reteam(){
   const cs=data.currentSession;if(cs.isEven||cs.history.length>0||cs.state!=='setup')return;
   const all=[...cs.teamA,...cs.teamB,...cs.bench];const sh=shuffle([...all]);
   cs.teamA=[sh[0],sh[1]];cs.teamB=[sh[2],sh[3]];cs.bench=sh.slice(4);
-  save();renderMatchTab();showToast('Teams reshuffled! 🔀');
-  if(liveCode)pushState();
+  save();renderMatchTab();showToast('Teams reshuffled! 🔀');if(liveCode)pushState();
 }
 
 function startPlaying(){
@@ -907,20 +1137,22 @@ function startPlaying(){
   cs.state='playing';save();
   const tA=cs.teamA.map(i=>data.players[i]?.name).join(' & ');
   const tB=cs.teamB.map(i=>data.players[i]?.name).join(' & ');
-  addEvent('start',`Match ${cs.matchNum} started`,`${tA}  vs  ${tB} · ₹${cs.bet} per match`);
-  renderMatchTab();
-  if(liveCode)pushState();
+  addEvent('start',`Match ${cs.matchNum} started`,`${tA} vs ${tB} · ₹${cs.bet}`);
+  renderMatchTab();if(liveCode)pushState();
 }
 
 async function declareWinner(team){
   if(isViewer)return;
-  const cs=data.currentSession;cs.winner=team;cs.state='result';cs.payAssign=null;cs.payments=[];
+  const cs=data.currentSession;
+  cs.winner=team;cs.state='result';cs.payAssign=null;cs.payments=[];
   const record={matchNum:cs.matchNum,teamA:[...cs.teamA],teamB:[...cs.teamB],winner:team,bet:cs.bet,payments:[],date:cs.date};
   cs.history.push(record);
-  let sess=data.sessions.find(s=>s.date===cs.date);if(!sess){sess={date:cs.date,matches:[]};data.sessions.push(sess);}sess.matches.push(record);
+  let sess=data.sessions.find(s=>s.date===cs.date);
+  if(!sess){sess={date:cs.date,matches:[],startTime:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})};data.sessions.push(sess);}
+  sess.matches.push(record);
   const winNames=(team==='A'?cs.teamA:cs.teamB).map(i=>data.players[i]?.name).join(' & ');
   const loseNames=(team==='A'?cs.teamB:cs.teamA).map(i=>data.players[i]?.name).join(' & ');
-  addEvent('win',`${winNames} won Match ${cs.matchNum}!`,`Beat ${loseNames} · ₹${cs.bet} each`);
+  addEvent('win',`${winNames} won Match ${cs.matchNum}!`,`Beat ${loseNames} · ₹${cs.bet}`);
   save();renderMatchTab();
   if(liveCode)await pushState();
   await pushMatchRecord(record);
@@ -931,71 +1163,459 @@ function nextMatch(){
   const cs=data.currentSession;
   const winIdx=cs.winner==='A'?cs.teamA:cs.teamB;
   const loseIdx=cs.winner==='A'?cs.teamB:cs.teamA;
-
   if(cs.isEven){
-    // EVEN mode: winner stays, next team from queue comes in
-    // Loser goes to END of queue
     const queue=[...(cs.waitingTeams||[])];
-    if(queue.length>0){
-      const challenger=queue.shift();    // next team from front of queue
-      queue.push([...loseIdx]);           // loser goes to back
-      cs.teamA=[...winIdx];
-      cs.teamB=[...challenger];
-      cs.waitingTeams=queue;
-    } else {
-      // Only 2 teams total (6 players exactly, all playing each match)
-      // Just re-assign: winner is team A, loser is team B again
-      cs.teamA=[...winIdx];cs.teamB=[...loseIdx];cs.waitingTeams=[];
-    }
+    if(queue.length>0){const challenger=queue.shift();queue.push([...loseIdx]);cs.teamA=[...winIdx];cs.teamB=[...challenger];cs.waitingTeams=queue;}
+    else{cs.teamA=[...winIdx];cs.teamB=[...loseIdx];cs.waitingTeams=[];}
     cs.bench=[];
   } else {
-    // ODD mode: existing rotation logic
-    const shuffledLosers=shuffle([...loseIdx]);
-    const slotsForLosers=Math.max(0,2-cs.bench.length);
-    cs.teamA=[...winIdx];
-    cs.teamB=[...cs.bench,...shuffledLosers.slice(0,slotsForLosers)].slice(0,2);
-    cs.bench=shuffledLosers.slice(slotsForLosers);
+    const sl=shuffle([...loseIdx]);const slots=Math.max(0,2-cs.bench.length);
+    cs.teamA=[...winIdx];cs.teamB=[...cs.bench,...sl.slice(0,slots)].slice(0,2);cs.bench=sl.slice(slots);
   }
-
   cs.matchNum++;cs.state='setup';cs.winner=null;cs.payments=[];cs.payAssign=null;
+  // sessionTxns is NOT touched here — it's the permanent log, never cleared
   const nA=cs.teamA.map(i=>data.players[i]?.name).join(' & ');
   const nB=cs.teamB.map(i=>data.players[i]?.name).join(' & ');
-  addEvent('next',`Match ${cs.matchNum} up next`,`${nA}  vs  ${nB}`);
-  save();renderMatchTab();
-  if(liveCode)pushState();
+  addEvent('next',`Match ${cs.matchNum} up next`,`${nA} vs ${nB}`);
+  save();renderMatchTab();if(liveCode)pushState();
 }
 
-// ── HISTORY ──
-function populateFilters(){
-  const dates=[...new Set(data.sessions.map(s=>s.date))].sort().reverse();
-  ['hist-filter','lb-filter'].forEach(id=>{
-    const sel=document.getElementById(id);if(!sel)return;const cur=sel.value;sel.innerHTML='';
-    const all=document.createElement('option');all.value='all';all.textContent=id==='lb-filter'?'All Time':'All Sessions';sel.appendChild(all);
-    dates.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=formatDate(d);sel.appendChild(o);});
-    if(cur)sel.value=cur;
+// ════════════════════════════════════
+// ACTIVITY CALENDAR — GitHub heatmap style
+// ════════════════════════════════════
+function renderCalendar(){
+  const container=document.getElementById('cal-container');
+  if(!container)return;
+
+  const playedDates=new Set(data.sessions.map(s=>s.date));
+  const weekStreak=calcWeekStreak();
+  document.getElementById('cal-streak-display').textContent=`🔥 ${weekStreak} week${weekStreak!==1?'s':''}`;
+
+  const todayStr=today();
+  const todayD=new Date(todayStr+'T12:00:00');
+
+  // Go back exactly 52 weeks from today, then snap to nearest Sunday before that
+  const start=new Date(todayD);
+  start.setDate(start.getDate()-364);
+  while(start.getDay()!==0)start.setDate(start.getDate()-1);
+
+  // Build weeks array
+  const weeks=[];
+  const cur=new Date(start);
+  while(cur<=todayD){
+    const wk=[];
+    for(let d=0;d<7;d++){
+      const ds=cur.toISOString().split('T')[0];
+      wk.push({ds,active:playedDates.has(ds),isToday:ds===todayStr,future:cur>todayD});
+      cur.setDate(cur.getDate()+1);
+    }
+    weeks.push(wk);
+  }
+
+  // Month label positions — only show label when month changes
+  // each week col = 12px wide (10px cell + 2px gap)
+  const CELL=10,GAP=2,WEEK_W=CELL+GAP;
+  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  // Build month strip: array of {left, label}
+  const monthMarks=[];let lastMon=-1;
+  weeks.forEach((wk,wi)=>{
+    const mo=new Date(wk[0].ds+'T12:00:00').getMonth();
+    if(mo!==lastMon){monthMarks.push({left:wi*WEEK_W,label:monthNames[mo]});lastMon=mo;}
+  });
+
+  const DAY_LABELS=['','M','','W','','F',''];
+  const LABEL_W=18;
+  const totalW=LABEL_W+2+weeks.length*WEEK_W;
+
+  // Build HTML
+  // Month strip
+  let monthHtml='<div style="position:relative;height:13px;margin-left:'+LABEL_W+'px;margin-bottom:2px;">';
+  monthMarks.forEach(m=>{
+    monthHtml+=`<span style="position:absolute;left:${m.left}px;font-size:.58rem;color:var(--muted);white-space:nowrap">${m.label}</span>`;
+  });
+  monthHtml+='</div>';
+
+  // Day labels column
+  let dayLblHtml='<div style="display:flex;flex-direction:column;gap:'+GAP+'px;width:'+LABEL_W+'px;flex-shrink:0;padding-top:1px;margin-right:2px;">';
+  DAY_LABELS.forEach(l=>{
+    dayLblHtml+=`<div style="height:${CELL}px;font-size:.57rem;color:var(--muted);line-height:${CELL}px;text-align:right">${l}</div>`;
+  });
+  dayLblHtml+='</div>';
+
+  // Week columns
+  let weeksHtml='<div style="display:flex;gap:'+GAP+'px;">';
+  weeks.forEach(wk=>{
+    weeksHtml+='<div style="display:flex;flex-direction:column;gap:'+GAP+'px;">';
+    wk.forEach(cell=>{
+      let bg='#1e1e24';
+      let ring='';
+      let cursor='default';
+      let onclick='';
+      if(cell.active){
+        const sess=data.sessions.find(s=>s.date===cell.ds);
+        const cnt=sess?.matches?.length||1;
+        const a=Math.min(0.2+cnt*0.12,0.85);
+        bg=`rgba(200,241,53,${a})`;
+        cursor='pointer';
+        onclick=`onclick="showSessionDetail('${cell.ds}')"`;
+      }
+      if(cell.isToday) ring='box-shadow:0 0 0 1px var(--accent2);';
+      weeksHtml+=`<div style="width:${CELL}px;height:${CELL}px;border-radius:2px;background:${bg};cursor:${cursor};flex-shrink:0;transition:transform .1s;${ring}" ${onclick} title="${cell.ds}${cell.active?' ✓':''}"></div>`;
+    });
+    weeksHtml+='</div>';
+  });
+  weeksHtml+='</div>';
+
+  container.innerHTML=`
+    ${monthHtml}
+    <div class="cal-scroll">
+      <div style="display:flex;width:max-content;">
+        ${dayLblHtml}
+        ${weeksHtml}
+      </div>
+    </div>
+  `;
+}
+
+function calcWeekStreak(){
+  // A "week" has a session if any day in Mon-Sun has a session
+  const playedDates=new Set(data.sessions.map(s=>s.date));
+  if(!playedDates.size)return 0;
+  let streak=0;
+  const now=new Date();
+  // Start from current week (Monday)
+  const cur=new Date(now);
+  cur.setDate(cur.getDate()-((cur.getDay()+6)%7)); // go to Monday
+  cur.setHours(0,0,0,0);
+  for(let w=0;w<52;w++){
+    let weekPlayed=false;
+    for(let d=0;d<7;d++){
+      const ds=new Date(cur);ds.setDate(ds.getDate()+d);
+      const dstr=ds.toISOString().split('T')[0];
+      if(playedDates.has(dstr)){weekPlayed=true;break;}
+    }
+    if(weekPlayed)streak++;
+    else if(w>0)break; // gap found, stop (first week might be ongoing)
+    cur.setDate(cur.getDate()-7);
+  }
+  return streak;
+}
+
+function showSessionDetail(date){
+  const sess=data.sessions.find(s=>s.date===date);
+  const cont=document.getElementById('sess-detail-container');
+  if(!sess||!cont)return;
+  // Toggle off if same date clicked again
+  const existing=cont.querySelector('[data-date]');
+  if(existing&&existing.dataset.date===date){cont.innerHTML='';return;}
+
+  const matchCount=sess.matches?.length||0;
+
+  // Build day leaderboard from this session's matches
+  const stats={};
+  data.players.forEach((p,i)=>{stats[i]={name:p.name,color:p.color,wins:0,losses:0,earned:0};});
+  (sess.matches||[]).forEach(m=>{
+    const wi=m.winner==='A'?m.teamA:m.teamB;
+    const li=m.winner==='A'?m.teamB:m.teamA;
+    wi.forEach(i=>{if(stats[i]){stats[i].wins++;stats[i].earned+=m.bet/wi.length;}});
+    li.forEach(i=>{if(stats[i]){stats[i].losses++;stats[i].earned-=m.bet/li.length;}});
+  });
+  const played=Object.entries(stats).filter(([,s])=>s.wins>0||s.losses>0);
+  const sorted=played.sort((a,b)=>b[1].earned-a[1].earned);
+
+  const lbRows=sorted.map(([,s],rank)=>{
+    const eFmt=s.earned>0?`+₹${Math.round(s.earned)}`:s.earned<0?`-₹${Math.abs(Math.round(s.earned))}`:'₹0';
+    const eCls=s.earned>0?'pos':s.earned<0?'neg':'zero';
+    const medal=rank===0?'🥇':rank===1?'🥈':rank===2?'🥉':`${rank+1}`;
+    return `<div class="day-lb-row">
+      <div class="day-lb-rank">${medal}</div>
+      <div class="day-lb-dot" style="background:${s.color}"></div>
+      <div class="day-lb-name">${s.name}</div>
+      <div class="day-lb-wl">${s.wins}W·${s.losses}L</div>
+      <div class="day-lb-earn ${eCls}">${eFmt}</div>
+    </div>`;
+  }).join('');
+
+  const matchRows=(sess.matches||[]).map(m=>{
+    const wt=(m.winner==='A'?m.teamA:m.teamB).map(i=>data.players[i]?.name||`P${i}`);
+    const lt=(m.winner==='A'?m.teamB:m.teamA).map(i=>data.players[i]?.name||`P${i}`);
+    return `<div class="sess-match-row">
+      <div class="smr-top"><span class="smr-num">Match ${m.matchNum}</span><span class="smr-bet">₹${m.bet}</span></div>
+      <div><span class="smr-winner">🏆 ${wt.join(' & ')}</span><span class="smr-loser"> beat ${lt.join(' & ')}</span></div>
+    </div>`;
+  }).join('');
+
+  cont.innerHTML=`
+    <div class="card" data-date="${date}" style="margin-top:0">
+      <div class="sess-detail-header">
+        <div class="sess-detail-date">📅 ${formatDate(date)}</div>
+        <button class="sess-detail-close" onclick="document.getElementById('sess-detail-container').innerHTML=''">✕</button>
+      </div>
+      <div style="font-size:.74rem;color:var(--muted);margin-bottom:12px">${matchCount} match${matchCount!==1?'es':''} played</div>
+      ${lbRows?`<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:7px">Day Leaderboard</div>${lbRows}<div style="margin-top:12px;margin-bottom:7px;font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">Matches</div>`:''}
+      ${matchRows}
+    </div>`;
+}
+
+// ════════════════════════════════════
+// LEADERBOARD v2
+// ════════════════════════════════════
+let lbPeriod='all';
+function setLbFilter(period,btn){
+  lbPeriod=period;
+  document.querySelectorAll('.lb-ftab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderLeaderboard();
+}
+
+function filterSessionsByPeriod(period){
+  const now=new Date();
+  return data.sessions.filter(s=>{
+    if(period==='all')return true;
+    if(period==='today')return s.date===today();
+    if(period==='week'){const d=new Date(s.date+'T12:00:00');return(now-d)/(86400000)<=7;}
+    return true;
   });
 }
 
-function renderHistory(){
-  const filter=document.getElementById('hist-filter').value;const content=document.getElementById('hist-content');content.innerHTML='';
-  let sessions=[...data.sessions].sort((a,b)=>b.date.localeCompare(a.date));
-  if(filter!=='all')sessions=sessions.filter(s=>s.date===filter);
-  if(!sessions.length){content.innerHTML='<div class="hist-empty">No history yet.</div>';return;}
-  sessions.forEach(session=>{
-    const grp=document.createElement('div');grp.className='date-group';grp.innerHTML=`<div class="date-group-title">📅 ${formatDate(session.date)}</div>`;
-    session.matches.forEach(m=>{const wt=(m.winner==='A'?m.teamA:m.teamB).map(i=>data.players[i]?.name||`P${i}`);const lt=(m.winner==='A'?m.teamB:m.teamA).map(i=>data.players[i]?.name||`P${i}`);const card=document.createElement('div');card.className='hist-card';card.innerHTML=`<div class="hist-card-top"><span class="hist-card-num">Match ${m.matchNum}</span><span class="hist-bet">₹${m.bet}</span></div><div><span class="hist-winner">🏆 ${wt.join(' & ')}</span><span class="hist-loser"> vs ${lt.join(' & ')}</span></div>`;grp.appendChild(card);});
-    content.appendChild(grp);
+function buildStats(sessions){
+  const stats={};
+  data.players.forEach((p,i)=>{stats[i]={name:p.name,color:p.color,wins:0,losses:0,earned:0,streak:0,maxStreak:0,played:0,history:[]};});
+  sessions.forEach(sess=>sess.matches.forEach(m=>{
+    const wi=m.winner==='A'?m.teamA:m.teamB;
+    const li=m.winner==='A'?m.teamB:m.teamA;
+    wi.forEach(i=>{if(stats[i]){stats[i].wins++;stats[i].played++;stats[i].earned+=m.bet/wi.length;stats[i].history.push({result:'W',earned:m.bet/wi.length,matchNum:m.matchNum,date:m.date});}});
+    li.forEach(i=>{if(stats[i]){stats[i].losses++;stats[i].played++;stats[i].earned-=m.bet/li.length;stats[i].history.push({result:'L',earned:-m.bet/li.length,matchNum:m.matchNum,date:m.date});}});
+  }));
+  Object.values(stats).forEach(s=>{
+    let cur=0,max=0;
+    s.history.forEach(h=>{if(h.result==='W'){cur++;max=Math.max(max,cur);}else cur=0;});
+    s.streak=cur;s.maxStreak=max;
   });
+  return stats;
 }
 
 function renderLeaderboard(){
-  const filter=document.getElementById('lb-filter').value;const content=document.getElementById('lb-content');content.innerHTML='';
-  let sessions=filter==='all'?data.sessions:data.sessions.filter(s=>s.date===filter);
-  const stats={};data.players.forEach((p,i)=>{stats[i]={name:p.name,color:p.color,wins:0,losses:0,earned:0};});
-  sessions.forEach(session=>{session.matches.forEach(m=>{const wi=m.winner==='A'?m.teamA:m.teamB;const li=m.winner==='A'?m.teamB:m.teamA;wi.forEach(i=>{if(stats[i]){stats[i].wins++;stats[i].earned+=m.bet/wi.length;}});li.forEach(i=>{if(stats[i]){stats[i].losses++;stats[i].earned-=m.bet/li.length;}});});});
-  const sorted=Object.entries(stats).sort((a,b)=>b[1].wins-a[1].wins||b[1].earned-a[1].earned);
-  if(sorted.every(([,s])=>s.wins===0&&s.losses===0)){content.innerHTML='<div class="hist-empty">No data yet. Play some matches!</div>';return;}
-  sorted.forEach(([,s],rank)=>{const card=document.createElement('div');card.className='lb-card';const eFmt=s.earned>0?`+₹${Math.round(s.earned)}`:s.earned<0?`-₹${Math.abs(Math.round(s.earned))}`:'₹0';const eCls=s.earned>0?'pos':s.earned<0?'neg':'zero';card.innerHTML=`<div class="lb-rank ${rank===0?'gold':''}">${rank+1}</div><div class="lb-dot" style="background:${s.color}"></div><div class="lb-name">${s.name}</div><div class="lb-stats"><div class="lb-wl">${s.wins}W · ${s.losses}L</div><div class="lb-money ${eCls}">${eFmt}</div></div>`;content.appendChild(card);});
+  const content=document.getElementById('lb-content');if(!content)return;content.innerHTML='';
+  const sessions=filterSessionsByPeriod(lbPeriod);
+  const stats=buildStats(sessions);
+  const played=Object.entries(stats).filter(([,s])=>s.played>0);
+  if(!played.length){content.innerHTML='<div style="color:var(--muted);text-align:center;padding:50px 0;font-size:.9rem">No matches for this period.<br>Play some! 🏸</div>';return;}
+  const sorted=played.sort((a,b)=>b[1].earned-a[1].earned||b[1].wins-a[1].wins);
+
+  // PODIUM
+  const podium=document.createElement('div');podium.className='lb-hero';
+  const podOrder=sorted.length>=3?[sorted[1],sorted[0],sorted[2]]:(sorted.length===2?[sorted[1],sorted[0]]:sorted);
+  ['🥈','🥇','🥉'].forEach((medal,pi)=>{
+    const entry=podOrder[pi];if(!entry)return;
+    const[,s]=entry;
+    const eFmt=s.earned>0?`+₹${Math.round(s.earned)}`:s.earned<0?`-₹${Math.abs(Math.round(s.earned))}`:'₹0';
+    const eCls=s.earned>0?'pos':s.earned<0?'neg':'zero';
+    const cls=pi===1?'first':pi===0?'second':'third';
+    const card=document.createElement('div');card.className=`lb-hero-card ${cls}`;
+    card.innerHTML=`<div class="lb-hero-medal">${medal}</div><div class="lb-hero-av" style="background:${s.color}">${s.name[0].toUpperCase()}</div><div class="lb-hero-name">${s.name}</div><div class="lb-hero-earn ${eCls}">${eFmt}</div><div class="lb-hero-wl">${s.wins}W · ${s.losses}L</div>`;
+    card.onclick=()=>openProfile(entry[0],stats);
+    podium.appendChild(card);
+  });
+  content.appendChild(podium);
+
+  // SPECIAL AWARDS
+  const specials=document.createElement('div');specials.className='lb-specials';
+  const mvp=sorted[0];
+  const streaker=played.slice().sort((a,b)=>b[1].streak-a[1].streak)[0];
+  const mostL=played.slice().sort((a,b)=>b[1].losses-a[1].losses)[0];
+  const mostP=played.slice().sort((a,b)=>b[1].played-a[1].played)[0];
+  [{icon:'👑',label:'MVP',entry:mvp,val:`+₹${Math.round(Math.max(0,mvp[1].earned))}`},
+   {icon:'🔥',label:'Hot Streak',entry:streaker,val:`${streaker[1].streak} in a row`},
+   {icon:'😅',label:'Taking Ls',entry:mostL,val:`${mostL[1].losses} losses`},
+   {icon:'🎯',label:'Most Active',entry:mostP,val:`${mostP[1].played} matches`}
+  ].forEach(({icon,label,entry,val})=>{
+    const[,s]=entry;
+    const card=document.createElement('div');card.className='lb-special-card';
+    card.innerHTML=`<div class="lb-sp-icon">${icon}</div><div><div class="lb-sp-label">${label}</div><div class="lb-sp-name">${s.name}</div><div class="lb-sp-val">${val}</div></div>`;
+    card.onclick=()=>openProfile(entry[0],stats);
+    specials.appendChild(card);
+  });
+  content.appendChild(specials);
+
+  // FULL TABLE — compact with form pills
+  const ttl=document.createElement('div');ttl.className='lb-table-title';ttl.textContent='Full Rankings';content.appendChild(ttl);
+  sorted.forEach(([idx,s],rank)=>{
+    const eFmt=s.earned>0?`+₹${Math.round(s.earned)}`:s.earned<0?`-₹${Math.abs(Math.round(s.earned))}`:'₹0';
+    const eCls=s.earned>0?'pos':s.earned<0?'neg':'zero';
+    const rankCls=rank===0?'r1':rank===1?'r2':rank===2?'r3':'';
+    // Recent form: last 5, LEFT=oldest, RIGHT=newest
+    const last5=s.history.slice(-5);
+    const formPills=last5.map(h=>`<div class="form-pill ${h.result}">${h.result}</div>`).join('');
+    const winRate=s.played?Math.round(s.wins/s.played*100):0;
+    const row=document.createElement('div');row.className='lb-row';
+    row.innerHTML=`
+      <div class="lb-row-top">
+        <div class="lb-row-rank ${rankCls}">${rank+1}</div>
+        <div class="lb-row-av" style="background:${s.color}">${s.name[0].toUpperCase()}</div>
+        <div class="lb-row-mid">
+          <div class="lb-row-name">${s.name}</div>
+          <div class="lb-row-meta">${s.wins}W · ${s.losses}L · ${winRate}% · ${s.played} played${s.streak>1?' · 🔥'+s.streak:''}</div>
+          <div class="form-pills">${formPills}</div>
+        </div>
+        <div class="lb-row-right"><div class="lb-row-earn ${eCls}">${eFmt}</div></div>
+      </div>`;
+    row.onclick=()=>openProfile(idx,stats);
+    content.appendChild(row);
+  });
+}
+
+function openProfile(playerIdx,stats){
+  const s=stats[playerIdx];if(!s)return;
+  const eFmt=s.earned>0?`+₹${Math.round(s.earned)}`:s.earned<0?`-₹${Math.abs(Math.round(s.earned))}`:'₹0';
+  const eCls=s.earned>0?'pos':s.earned<0?'neg':'zero';
+  const winRate=s.played?Math.round(s.wins/s.played*100):0;
+  const last5=s.history.slice(-5);
+  const formPills=last5.map(h=>`<div class="form-pill ${h.result}" style="width:22px;height:22px;font-size:.75rem">${h.result}</div>`).join('');
+  const recentRows=s.history.slice(-6).reverse().map(h=>`
+    <div class="profile-match-row">
+      <span style="color:${h.result==='W'?'var(--green)':'var(--red)'};font-weight:700">${h.result==='W'?'🏆 WIN':'😅 LOSS'}</span>
+      <span style="color:var(--muted);font-size:.75rem">Match ${h.matchNum}</span>
+      <span style="font-weight:600;color:${h.earned>0?'var(--green)':'var(--red)'}">${h.earned>0?'+':''}₹${Math.round(Math.abs(h.earned))}</span>
+    </div>`).join('');
+  showModal(s.name,`
+    <div class="profile-header">
+      <div class="profile-av" style="background:${s.color}">${s.name[0].toUpperCase()}</div>
+      <div class="profile-info">
+        <div class="profile-name-big">${s.name}</div>
+        <div class="form-pills" style="margin-top:5px">${formPills}</div>
+      </div>
+    </div>
+    <div class="stats-grid-3">
+      <div class="stat-box"><div class="stat-box-val acc">${s.wins}</div><div class="stat-box-label">Wins</div></div>
+      <div class="stat-box"><div class="stat-box-val neg">${s.losses}</div><div class="stat-box-label">Losses</div></div>
+      <div class="stat-box"><div class="stat-box-val acc">${winRate}%</div><div class="stat-box-label">Win Rate</div></div>
+      <div class="stat-box"><div class="stat-box-val ${eCls}">${eFmt}</div><div class="stat-box-label">Earnings</div></div>
+      <div class="stat-box"><div class="stat-box-val acc">${s.maxStreak}</div><div class="stat-box-label">Best Streak</div></div>
+      <div class="stat-box"><div class="stat-box-val acc">${s.played}</div><div class="stat-box-label">Played</div></div>
+    </div>
+    ${recentRows?`<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Recent Matches</div>${recentRows}`:''}
+  `,[{label:'Close',cls:'btn btn-secondary',fn:closeModal}]);
+}
+
+// ════════════════════════════════════
+// MY PROFILE (personal view, no login)
+// ════════════════════════════════════
+function updateMeAvatar(){
+  const av=document.getElementById('me-avatar');
+  const myIdx=myPlayerIdx();
+  if(myIdx>=0&&data.players[myIdx]){
+    const p=data.players[myIdx];
+    av.style.display='flex';
+    av.style.background=p.color;
+    av.textContent=p.name[0].toUpperCase();
+  } else {
+    av.style.display='none';
+  }
+}
+
+function renderMyProfile(){
+  const cont=document.getElementById('me-content');if(!cont)return;
+  const myIdx=myPlayerIdx();
+
+  // No "me" set — show picker
+  if(myIdx<0||!data.players.length){
+    if(!data.players.length){
+      cont.innerHTML=`<div class="card" style="text-align:center;padding:40px 20px"><div style="font-size:2.5rem;margin-bottom:12px">👤</div><div style="color:var(--muted);font-size:.9rem">Set up players first,<br>then pick who you are.</div><button class="btn btn-primary" style="width:auto;padding:11px 24px;margin-top:16px" onclick="showTab('setup')">Go to Setup</button></div>`;
+      return;
+    }
+    cont.innerHTML=`<div class="card">
+      <div class="card-title">👤 Who Are You?</div>
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;line-height:1.6">Pick your name to see your personal stats across all sessions. No login needed.</p>
+      <div class="player-picker-grid">${data.players.map((p,i)=>`
+        <button class="player-pick-btn" onclick="setMe('${p.name}')">
+          <div class="player-pick-dot" style="background:${p.color}"></div>
+          ${p.name}
+        </button>`).join('')}
+      </div>
+    </div>`;
+    return;
+  }
+
+  const p=data.players[myIdx];
+  // Build all-time stats for this player
+  const allMatches=data.sessions.flatMap(sess=>sess.matches||[]);
+  let wins=0,losses=0,earned=0,history=[];
+  allMatches.forEach(m=>{
+    const wi=m.winner==='A'?m.teamA:m.teamB;
+    const li=m.winner==='A'?m.teamB:m.teamA;
+    if(wi.includes(myIdx)){wins++;earned+=m.bet/wi.length;history.push({result:'W',earned:m.bet/wi.length,matchNum:m.matchNum,date:m.date});}
+    if(li.includes(myIdx)){losses++;earned-=m.bet/li.length;history.push({result:'L',earned:-m.bet/li.length,matchNum:m.matchNum,date:m.date});}
+  });
+  const played=wins+losses;
+  const winRate=played?Math.round(wins/played*100):0;
+  let curStreak=0,maxStreak=0;
+  history.forEach(h=>{if(h.result==='W'){curStreak++;maxStreak=Math.max(maxStreak,curStreak);}else curStreak=0;});
+  const eFmt=earned>0?`+₹${Math.round(earned)}`:earned<0?`-₹${Math.abs(Math.round(earned))}`:'₹0';
+  const eCls=earned>0?'pos':earned<0?'neg':'zero';
+  const last5=history.slice(-5);
+  const formPills=last5.map(h=>`<div class="form-pill ${h.result}" style="width:22px;height:22px;font-size:.75rem">${h.result}</div>`).join('');
+
+  // Money owed/owing in active session (from sessionTxns)
+  let moneySection='';
+  const cs=data.currentSession;
+  if(cs){
+    rebuildSessionIOUs();
+    const txns=cs.sessionTxns||[];
+    const myDebts=txns.filter(t=>t.from===p.name&&!t.paid);
+    const myEarnings=txns.filter(t=>t.to===p.name&&!t.paid);
+    if(myDebts.length||myEarnings.length){
+      const totalOwe=myDebts.reduce((s,t)=>s+t.amount,0);
+      const totalRecv=myEarnings.reduce((s,t)=>s+t.amount,0);
+      moneySection=`<div style="margin-top:4px">
+        <div class="profile-section-title">💰 Active Session Balance</div>
+        ${myDebts.length?`<div style="background:rgba(255,77,109,.06);border:1px solid rgba(255,77,109,.2);border-radius:10px;padding:10px 13px;margin-bottom:6px;font-size:.84rem;display:flex;justify-content:space-between;align-items:center"><span>You owe (${myDebts.length} payment${myDebts.length>1?'s':''})</span><span style="color:var(--red);font-weight:700">₹${totalOwe}</span></div>`:''}
+        ${myEarnings.length?`<div style="background:rgba(77,255,155,.05);border:1px solid rgba(77,255,155,.2);border-radius:10px;padding:10px 13px;margin-bottom:6px;font-size:.84rem;display:flex;justify-content:space-between;align-items:center"><span>Owed to you (${myEarnings.length} payment${myEarnings.length>1?'s':''})</span><span style="color:var(--green);font-weight:700">₹${totalRecv}</span></div>`:''}
+      </div>`;
+    }
+  }
+
+  // Recent match history
+  const recentRows=history.slice(-8).reverse().map(h=>`
+    <div class="profile-match-row">
+      <span style="color:${h.result==='W'?'var(--green)':'var(--red)'};font-weight:700">${h.result==='W'?'🏆':'😅'} ${h.result==='W'?'Win':'Loss'}</span>
+      <span style="color:var(--muted);font-size:.74rem">${formatDate(h.date)} · M${h.matchNum}</span>
+      <span style="font-weight:600;color:${h.earned>0?'var(--green)':'var(--red)'}">${h.earned>0?'+':''}₹${Math.round(Math.abs(h.earned))}</span>
+    </div>`).join('');
+
+  cont.innerHTML=`
+    <div class="card">
+      <div class="profile-header">
+        <div class="profile-av" style="background:${p.color}">${p.name[0].toUpperCase()}</div>
+        <div class="profile-info">
+          <div class="profile-name-big">${p.name}</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:2px">${played} matches across ${data.sessions.length} sessions</div>
+          <button class="profile-change-btn" onclick="setMe(null)">Change player ›</button>
+        </div>
+      </div>
+      <div class="form-pills" style="margin-bottom:13px">${formPills||'<span style="font-size:.78rem;color:var(--muted)">No matches yet</span>'}</div>
+      <div class="stats-grid-3">
+        <div class="stat-box"><div class="stat-box-val acc">${wins}</div><div class="stat-box-label">Wins</div></div>
+        <div class="stat-box"><div class="stat-box-val neg">${losses}</div><div class="stat-box-label">Losses</div></div>
+        <div class="stat-box"><div class="stat-box-val acc">${winRate}%</div><div class="stat-box-label">Win Rate</div></div>
+        <div class="stat-box"><div class="stat-box-val ${eCls}">${eFmt}</div><div class="stat-box-label">All Earnings</div></div>
+        <div class="stat-box"><div class="stat-box-val acc">${maxStreak}</div><div class="stat-box-label">Best Streak</div></div>
+        <div class="stat-box"><div class="stat-box-val acc">${curStreak}</div><div class="stat-box-label">Current</div></div>
+      </div>
+      ${moneySection}
+      ${recentRows?`<div class="profile-section-title" style="margin-top:8px">Match History</div>${recentRows}`:''}
+    </div>`;
+}
+
+function setMe(name){
+  myName=name;saveMe();updateMeAvatar();
+  if(name)showTab('me');else renderMyProfile();
+}
+
+function populateFilters(){
+  const dates=[...new Set(data.sessions.map(s=>s.date))].sort().reverse();
+  const histSel=document.getElementById('hist-filter');
+  if(histSel){const cur=histSel.value;histSel.innerHTML='';const all=document.createElement('option');all.value='all';all.textContent='All Sessions';histSel.appendChild(all);dates.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=formatDate(d);histSel.appendChild(o);});if(cur)histSel.value=cur;}
 }
 
 // ── UTILS ──
@@ -1009,30 +1629,18 @@ document.getElementById('overlay').addEventListener('click',e=>{if(e.target.id==
 
 // ── INIT ──
 initDb();
-// If role was saved (viewer or host), reconnect realtime automatically on refresh
-if(liveCode && db){
-  subscribeRealtime(liveCode);
-  updateSessionPillUI();
-  // Viewers: re-fetch latest state from DB in case they missed updates while offline
+if(liveCode&&db){
+  subscribeRealtime(liveCode);updateSessionPillUI();
   if(isViewer){
     db.from('live_sessions').select('*').eq('code',liveCode).single().then(({data:rows})=>{
       if(rows){
         const st=JSON.parse(rows.state||'null');
-        const pl=JSON.parse(rows.players||'[]');
-        const se=JSON.parse(rows.sessions||'[]');
-        const tl=JSON.parse(rows.tl||'[]');
-        if(st){
-          data.currentSession=st;
-          data.players=pl;
-          data.sessions=se;
-          tlEvents=tl; saveTl();
-          save();
-          renderMatchTab();
-        }
+        if(st){data.currentSession=st;data.players=JSON.parse(rows.players||'[]');data.sessions=JSON.parse(rows.sessions||'[]');tlEvents=JSON.parse(rows.tl||'[]');saveTl();save();renderMatchTab();}
       }
     }).catch(()=>{});
   }
 }
+updateMeAvatar();
 if(data.currentSession)showTab('match');else showTab('setup');
 </script>
 </body>
