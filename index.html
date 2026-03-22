@@ -32,6 +32,9 @@ h1{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;letter-spacing:2px;color
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
 .session-pill{font-size:.72rem;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;color:var(--accent2);letter-spacing:1px;display:none;cursor:pointer;}
 .session-pill.on{display:inline-block;}
+.end-session-btn{display:none;font-size:.72rem;font-family:'DM Sans',sans-serif;font-weight:700;background:rgba(255,77,109,.12);border:1.5px solid rgba(255,77,109,.35);border-radius:20px;padding:5px 11px;color:var(--red);cursor:pointer;letter-spacing:.3px;transition:all .18s;}
+.end-session-btn:hover{background:rgba(255,77,109,.22);border-color:var(--red);}
+.end-session-btn.on{display:inline-block;}
 .header-right{display:flex;align-items:center;gap:8px;}
 .me-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;border:2px solid var(--border);cursor:pointer;transition:border-color .2s;flex-shrink:0;}
 .me-avatar:hover,.me-avatar.active{border-color:var(--accent);}
@@ -365,6 +368,7 @@ select option{background:var(--surface2);}
       <div class="live-dot" id="live-dot"></div>
     </div>
     <div class="header-right">
+      <button class="end-session-btn" id="end-session-btn" onclick="confirmEndSession()">⏹ End</button>
       <div class="session-pill" id="session-pill"></div>
       <div class="me-avatar" id="me-avatar" onclick="showTab('me')" title="My Profile" style="display:none"></div>
     </div>
@@ -406,7 +410,10 @@ select option{background:var(--surface2);}
     </div>
     <div class="card" id="danger-card" style="display:none">
       <div class="card-title" style="color:var(--red)">⚠️ Danger Zone</div>
-      <button class="btn btn-danger" onclick="confirmReset()">Reset All Data</button>
+      <button class="btn btn-secondary" style="margin-bottom:8px;border-color:rgba(255,77,109,.3);color:var(--red)" onclick="confirmResetSession()">🔄 Reset Current Session</button>
+      <p style="font-size:.74rem;color:var(--muted);margin-bottom:12px;line-height:1.5">Wipes only the active session — history is kept.</p>
+      <button class="btn btn-danger" onclick="confirmResetAll()">☠️ Reset All Data</button>
+      <p style="font-size:.74rem;color:var(--muted);margin-top:8px;line-height:1.5">Permanently deletes <b style="color:var(--red)">everything</b> — all history, all sessions, DB included. Cannot be undone.</p>
     </div>
     <!-- Install App Card -->
     <div class="card" id="install-card" style="display:none">
@@ -519,11 +526,7 @@ select option{background:var(--surface2);}
   <!-- ══ LEADERBOARD TAB ══ -->
   <div class="screen" id="tab-leaderboard">
     <div style="margin-top:13px">
-      <div class="lb-filter-tabs">
-        <button class="lb-ftab active" onclick="setLbFilter('all',this)">All Time</button>
-        <button class="lb-ftab" onclick="setLbFilter('today',this)">Today</button>
-        <button class="lb-ftab" onclick="setLbFilter('week',this)">This Week</button>
-      </div>
+      <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;padding:0 2px" id="lb-session-label">Current Session</div>
       <div id="lb-content"></div>
     </div>
   </div>
@@ -700,6 +703,7 @@ function showLoadingOverlay(show){
 
 function renderAfterLoad(){
   updateMeAvatar();
+  updateSessionPillUI();
   if(data.currentSession)showTab('match');else showTab('setup');
 }
 
@@ -853,8 +857,60 @@ function _renderSessDetail(id){
 function generateCode(){return 'SS-'+Math.floor(1000+Math.random()*9000);}
 function updateSessionPillUI(){
   const pill=document.getElementById('session-pill');
+  const endBtn=document.getElementById('end-session-btn');
   if(liveCode){pill.textContent=isViewer?liveCode+' 👀':liveCode;pill.classList.add('on');}
   else pill.classList.remove('on');
+  // Show End Session button whenever there's an active session (host only)
+  if(endBtn){
+    if(data.currentSession&&!isViewer) endBtn.classList.add('on');
+    else endBtn.classList.remove('on');
+  }
+}
+
+function confirmEndSession(){
+  const cs=data.currentSession;
+  const matchCount=cs?.history?.length||0;
+  showModal(
+    '⏹ End Session?',
+    `This will end the current session (${matchCount} match${matchCount!==1?'es':''} played).<br><br>Session history is saved and will appear in the <b>History</b> tab. The match screen will reset for a fresh start.`,
+    [
+      {label:'End Session',cls:'btn btn-danger',fn:endSession},
+      {label:'Keep Playing',cls:'btn btn-secondary',fn:closeModal}
+    ]
+  );
+}
+
+async function endSession(){
+  const cs=data.currentSession;
+  closeModal();
+
+  // Clear current_state in DB so it doesn't auto-restore on next open
+  if(db&&cs?.sessionId){
+    try{
+      await db.from('sessions').update({current_state:null}).eq('id',cs.sessionId);
+    }catch(e){}
+  }
+
+  // Reset live session if hosting
+  if(liveCode&&realtimeChan){
+    try{db.removeChannel(realtimeChan);}catch(e){}
+    realtimeChan=null;
+  }
+  clearRole();
+
+  // Wipe active session and players
+  data.currentSession=null;
+  data.players=[];
+  tlEvents=[];
+  moneyViewPlayer=null;
+  saveLocal();
+
+  updateSessionPillUI();
+  updateMeAvatar();
+  document.getElementById('live-dot').classList.remove('on');
+  renderLeaderboard();
+  showTab('setup');
+  showToast('Session ended 🏁 See History for results.');
 }
 
 async function hostSession(){
@@ -1183,20 +1239,76 @@ function _finaliseSession({teamA,teamB,bench,waitingTeams,isEven,manualTeams}){
   updateMeAvatar();
   tlEvents=[];saveTl();
   closeModal();
-  save();showTab('match');showToast('Session started! 🏸');
+  save();updateSessionPillUI();showTab('match');showToast('Session started! 🏸');
 }
 
-function confirmReset(){
-  showModal('Reset All Data?','This clears all local players, sessions and history — including the database.',[
-    {label:'Reset',cls:'btn btn-danger',fn:async()=>{
-      if(db){
-        try{await db.from('matches').delete().neq('id','00000000-0000-0000-0000-000000000000');}catch(e){}
-        try{await db.from('sessions').delete().neq('id','00000000-0000-0000-0000-000000000000');}catch(e){}
-      }
-      data={players:[],sessions:[],currentSession:null};saveLocal();closeModal();showTab('match');showToast('Cleared');
-    }},
-    {label:'Cancel',cls:'btn btn-secondary',fn:closeModal}
-  ]);
+function confirmResetSession(){
+  const cs=data.currentSession;
+  if(!cs){showToast('No active session to reset');return;}
+  const mc=cs.history?.length||0;
+  showModal('Reset Current Session?',
+    `This wipes the active session (${mc} match${mc!==1?'es':''} played) and removes it from the database.<br><br>All other history is <b style="color:var(--green)">kept safe</b>.`,
+    [
+      {label:'Reset Session',cls:'btn btn-danger',fn:async()=>{
+        // Remove this session from DB
+        if(db&&cs.sessionId){
+          try{await db.from('matches').delete().eq('session_id',cs.sessionId);}catch(e){}
+          try{await db.from('sessions').delete().eq('id',cs.sessionId);}catch(e){}
+        }
+        // Remove from local sessions array too
+        data.sessions=data.sessions.filter(s=>s.id!==cs.sessionId);
+        data.currentSession=null;
+        data.players=[];
+        tlEvents=[];
+        moneyViewPlayer=null;
+        saveLocal();
+        updateSessionPillUI();
+        updateMeAvatar();
+        renderLeaderboard();
+        closeModal();
+        showTab('setup');
+        showToast('Session reset 🔄');
+      }},
+      {label:'Cancel',cls:'btn btn-secondary',fn:closeModal}
+    ]
+  );
+}
+
+function confirmResetAll(){
+  // Step 1 — first warning
+  showModal('☠️ Reset ALL Data?',
+    `<div style="color:var(--red);font-weight:700;margin-bottom:10px">This cannot be undone.</div>
+     This will permanently delete:<br><br>
+     • Every session ever played<br>
+     • Every match result<br>
+     • All history from the database<br><br>
+     <b>Type <span style="color:var(--red);letter-spacing:2px">RESET</span> below to confirm:</b><br><br>
+     <input id="reset-confirm-input" type="text" placeholder="Type RESET here" style="text-transform:uppercase;letter-spacing:2px;margin-bottom:0">`,
+    [
+      {label:'☠️ Delete Everything',cls:'btn btn-danger',fn:async()=>{
+        const val=document.getElementById('reset-confirm-input')?.value?.trim().toUpperCase();
+        if(val!=='RESET'){
+          showToast('Type RESET to confirm ☠️');
+          return;
+        }
+        if(db){
+          try{await db.from('matches').delete().neq('id','00000000-0000-0000-0000-000000000000');}catch(e){}
+          try{await db.from('sessions').delete().neq('id','00000000-0000-0000-0000-000000000000');}catch(e){}
+        }
+        data={players:[],sessions:[],currentSession:null};
+        tlEvents=[];
+        moneyViewPlayer=null;
+        saveLocal();
+        updateSessionPillUI();
+        updateMeAvatar();
+        renderLeaderboard();
+        closeModal();
+        showTab('setup');
+        showToast('All data deleted ☠️');
+      }},
+      {label:'Cancel',cls:'btn btn-secondary',fn:closeModal}
+    ]
+  );
 }
 
 // ── MATCH RENDER ──
@@ -1905,8 +2017,30 @@ function buildStats(sessions){
 
 function renderLeaderboard(){
   const content=document.getElementById('lb-content');if(!content)return;content.innerHTML='';
-  const sessions=filterSessionsByPeriod(lbPeriod);
+  const cs=data.currentSession;
+
+  // Board shows CURRENT SESSION only. No active session → empty state.
+  if(!cs||!cs.history||!cs.history.length){
+    content.innerHTML=`<div style="text-align:center;padding:60px 0;color:var(--muted)">
+      <div style="font-size:2.5rem;margin-bottom:10px">🏆</div>
+      <div style="font-size:.9rem">${cs?'No matches played yet.<br>Start a match to see the board!':'No active session.<br>Start a session to see the board.'}</div>
+    </div>`;
+    return;
+  }
+
+  // Build a session object from currentSession for buildStats
+  const activeSess={
+    id:cs.sessionId,
+    date:cs.date,
+    players:data.players,
+    matches:cs.history.map(m=>({...m,players:data.players}))
+  };
+  const sessions=[activeSess];
   const stats=buildStats(sessions);
+  // Update label
+  const lbl=document.getElementById('lb-session-label');
+  if(lbl)lbl.textContent=cs?`Current Session · ${formatDate(cs.date)}`:'Board';
+
   const played=Object.entries(stats).filter(([,s])=>s.played>0);
   if(!played.length){content.innerHTML='<div style="color:var(--muted);text-align:center;padding:50px 0;font-size:.9rem">No matches for this period.<br>Play some! 🏸</div>';return;}
   const sorted=played.sort((a,b)=>b[1].earned-a[1].earned||b[1].wins-a[1].wins);
