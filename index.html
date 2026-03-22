@@ -408,6 +408,41 @@ select option{background:var(--surface2);}
       <div class="card-title" style="color:var(--red)">⚠️ Danger Zone</div>
       <button class="btn btn-danger" onclick="confirmReset()">Reset All Data</button>
     </div>
+    <!-- Install App Card -->
+    <div class="card" id="install-card" style="display:none">
+      <div class="card-title">📲 Install App</div>
+      <!-- Android: show install button -->
+      <div id="install-android" style="display:none">
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;line-height:1.6">Install Shuttle Squad on your home screen for quick access — works like a native app.</p>
+        <button class="btn btn-primary" onclick="triggerInstall()">⬇️ Install on this device</button>
+      </div>
+      <!-- iOS: show manual steps -->
+      <div id="install-ios" style="display:none">
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;line-height:1.6">To install on iPhone, follow these steps in <b style="color:var(--text)">Safari</b>:</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px;background:var(--surface2);border-radius:11px;padding:11px 13px">
+            <div style="font-size:1.4rem;flex-shrink:0">1️⃣</div>
+            <div style="font-size:.82rem;color:var(--text)">Tap the <b>Share</b> button <span style="font-size:1rem">⬆️</span> at the bottom of Safari</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;background:var(--surface2);border-radius:11px;padding:11px 13px">
+            <div style="font-size:1.4rem;flex-shrink:0">2️⃣</div>
+            <div style="font-size:.82rem;color:var(--text)">Scroll down and tap <b>"Add to Home Screen"</b></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;background:var(--surface2);border-radius:11px;padding:11px 13px">
+            <div style="font-size:1.4rem;flex-shrink:0">3️⃣</div>
+            <div style="font-size:.82rem;color:var(--text)">Tap <b>"Add"</b> in the top right — done! 🎉</div>
+          </div>
+        </div>
+        <p style="font-size:.74rem;color:var(--muted);margin-top:12px">⚠️ Must use Safari — Chrome on iPhone can't install PWAs.</p>
+      </div>
+      <!-- Already installed -->
+      <div id="install-done" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;color:var(--green)">
+          <span style="font-size:1.4rem">✅</span>
+          <span style="font-size:.88rem;font-weight:600">App already installed on this device!</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ══ MATCH TAB ══ -->
@@ -883,6 +918,7 @@ function showTab(tab){
   if(tab==='setup'){
     document.getElementById('danger-card').style.display=data.players.length?'block':'none';
     const lb=document.getElementById('leave-btn');if(lb)lb.style.display=liveCode?'block':'none';
+    updateInstallCard();
   }
 }
 
@@ -2121,7 +2157,89 @@ document.getElementById('overlay').addEventListener('click',e=>{if(e.target.id==
   loadFromDB();
 })();
 
-// ── PWA SERVICE WORKER ──
+// ── PWA INSTALL ──
+let _installPrompt = null; // captured beforeinstallprompt event
+
+// Capture the install prompt on Android Chrome
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _installPrompt = e;
+  // Re-render install card if setup tab is open
+  updateInstallCard();
+});
+
+// When app gets installed
+window.addEventListener('appinstalled', () => {
+  _installPrompt = null;
+  updateInstallCard();
+  showToast('App installed! 🎉 Find it on your home screen.');
+});
+
+function isRunningAsPWA(){
+  return window.matchMedia('(display-mode: standalone)').matches ||
+         window.navigator.standalone === true;
+}
+
+function isIOS(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+function isAndroid(){
+  return /android/i.test(navigator.userAgent);
+}
+
+function updateInstallCard(){
+  const card = document.getElementById('install-card');
+  const androidDiv = document.getElementById('install-android');
+  const iosDiv = document.getElementById('install-ios');
+  const doneDiv = document.getElementById('install-done');
+  if(!card) return;
+
+  card.style.display = 'block';
+
+  if(isRunningAsPWA()){
+    // Already installed — show checkmark
+    androidDiv.style.display = 'none';
+    iosDiv.style.display = 'none';
+    doneDiv.style.display = 'block';
+  } else if(isIOS()){
+    // iPhone/iPad — show manual steps
+    androidDiv.style.display = 'none';
+    iosDiv.style.display = 'block';
+    doneDiv.style.display = 'none';
+  } else if(_installPrompt){
+    // Android Chrome with prompt ready — show install button
+    androidDiv.style.display = 'block';
+    iosDiv.style.display = 'none';
+    doneDiv.style.display = 'none';
+  } else if(isAndroid()){
+    // Android but prompt not yet fired (might be already installed or not eligible)
+    androidDiv.style.display = 'block';
+    iosDiv.style.display = 'none';
+    doneDiv.style.display = 'none';
+    // Dim the button if no prompt
+    const btn = androidDiv.querySelector('button');
+    if(btn && !_installPrompt){
+      btn.style.opacity = '0.5';
+      btn.textContent = '⬇️ Open in Chrome to install';
+    }
+  } else {
+    // Desktop or unknown — still show iOS/Android hint
+    card.style.display = 'none';
+  }
+}
+
+async function triggerInstall(){
+  if(!_installPrompt){ showToast('Open this page in Chrome to install'); return; }
+  _installPrompt.prompt();
+  const { outcome } = await _installPrompt.userChoice;
+  if(outcome === 'accepted'){
+    _installPrompt = null;
+    updateInstallCard();
+  }
+}
+
+
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('/sw.js').catch(()=>{});
