@@ -362,7 +362,7 @@ select option{background:var(--surface2);}
 
   <div class="nav">
     <button class="nav-btn active" onclick="showTab('match')">🏸 Match</button>
-    <button class="nav-btn" onclick="showTab('history')">📅 Days</button>
+    <button class="nav-btn" onclick="showTab('history')">📋 History</button>
     <button class="nav-btn" onclick="showTab('leaderboard')">🏆 Board</button>
     <button class="nav-btn" onclick="showTab('timeline')">⚡ Live</button>
     <button class="nav-btn" onclick="showTab('setup')">⚙️ Setup</button>
@@ -465,14 +465,9 @@ select option{background:var(--surface2);}
   <!-- ══ HISTORY / CALENDAR TAB ══ -->
   <div class="screen" id="tab-history">
     <div style="margin-top:13px">
-      <div class="card" style="padding:16px">
-        <div class="cal-header">
-          <div class="cal-title">📅 Play Activity</div>
-          <div class="cal-streak" id="cal-streak-display">🔥 0 week streak</div>
-        </div>
-        <div id="cal-container"></div>
-      </div>
-      <div id="sess-detail-container"></div>
+      <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;padding:0 2px">Session History</div>
+      <div id="sess-history-list"></div>
+      <div id="sess-history-detail"></div>
     </div>
   </div>
 
@@ -492,7 +487,10 @@ select option{background:var(--surface2);}
   <div class="screen" id="tab-timeline">
     <div style="margin-top:13px">
       <div class="card">
-        <div class="card-title">⚡ Live Feed</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="card-title" style="margin-bottom:0">⚡ Live Feed</div>
+          <button id="tl-toggle-btn" onclick="toggleTimeline()" style="font-size:.72rem;padding:4px 12px;border-radius:18px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600">⏸ Pause</button>
+        </div>
         <div class="timeline" id="timeline-content">
           <div class="tl-empty">No events yet. Start a match!</div>
         </div>
@@ -525,17 +523,22 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 // ═══════════════════════════════════════════════════════════
 
 const COLORS=['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF922B','#CC5DE8','#20C997','#F06595','#74C0FC','#A9E34B'];
-const SK='shuttle_squad_v7';
+const SK='shuttle_squad_v9';
 const ROLE_KEY='shuttle_squad_role';
-const ME_KEY='shuttle_squad_me'; // which player am I?
+const ME_KEY='shuttle_squad_me';
 
-// ── LOCAL STATE ──
+// ── LOCAL CACHE (fast startup, DB is source of truth) ──
 let data=(() => {try{const r=localStorage.getItem(SK);if(r)return JSON.parse(r);}catch(e){}return{players:[],sessions:[],currentSession:null};})();
-function save(){try{localStorage.setItem(SK,JSON.stringify(data));}catch(e){}}
+function saveLocal(){try{localStorage.setItem(SK,JSON.stringify(data));}catch(e){}}
+
+// save() → writes to local cache AND queues a DB sync
+function save(){
+  saveLocal();
+  scheduleSyncSession();
+}
 
 // ── WHO AM I ──
-let myName=localStorage.getItem(ME_KEY)||null; // player's own name
-
+let myName=localStorage.getItem(ME_KEY)||null;
 function saveMe(){if(myName)localStorage.setItem(ME_KEY,myName);else localStorage.removeItem(ME_KEY);}
 function myPlayerIdx(){return data.players.findIndex(p=>p.name===myName);}
 
@@ -549,6 +552,110 @@ function clearRole(){isHost=true;isViewer=false;liveCode=null;try{localStorage.r
 let db=null, realtimeChan=null;
 function initDb(){
   if(SB_URL.startsWith('https')&&SB_KEY.startsWith('eyJ')){try{db=supabase.createClient(SB_URL,SB_KEY);}catch(e){}}
+}
+
+// Generate a UUID
+function genUUID(){
+  return([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
+}
+
+// ── DB SYNC ──
+let _syncTimer=null;
+function scheduleSyncSession(){
+  if(!db||isViewer)return;
+  clearTimeout(_syncTimer);
+  _syncTimer=setTimeout(()=>syncCurrentSessionToDB(),800);
+}
+
+async function syncCurrentSessionToDB(){
+  if(!db||!data.currentSession)return;
+  const cs=data.currentSession;
+  if(!cs.sessionId)return;
+  try{
+    await db.from('sessions').upsert({
+      id:cs.sessionId,
+      date:cs.date,
+      start_time:cs.startTime||'',
+      players:data.players,
+      is_even:cs.isEven,
+      manual_teams:cs.manualTeams||false,
+      current_state:cs
+    },{onConflict:'id'});
+    for(const m of (cs.history||[])){
+      if(!m.matchId)continue;
+      await db.from('matches').upsert({
+        id:m.matchId,
+        session_id:cs.sessionId,
+        match_num:m.matchNum,
+        team_a:m.teamA,
+        team_b:m.teamB,
+        winner:m.winner,
+        bet:m.bet,
+        payments:m.payments||[]
+      },{onConflict:'id'});
+    }
+  }catch(e){console.warn('DB sync failed:',e);}
+}
+
+async function loadFromDB(){
+  if(!db){renderAfterLoad();return;}
+  try{
+    showLoadingOverlay(true);
+    const{data:sessRows,error:sErr}=await db.from('sessions').select('*').order('created_at',{ascending:false});
+    if(sErr)throw sErr;
+    const{data:matchRows,error:mErr}=await db.from('matches').select('*').order('match_num',{ascending:true});
+    if(mErr)throw mErr;
+
+    const sessionsMap={};
+    (sessRows||[]).forEach(row=>{
+      const players=Array.isArray(row.players)?row.players:(typeof row.players==='string'?JSON.parse(row.players):row.players||[]);
+      sessionsMap[row.id]={id:row.id,date:row.date,startTime:row.start_time,createdAt:row.created_at,players,isEven:row.is_even,manualTeams:row.manual_teams,matches:[]};
+    });
+    (matchRows||[]).forEach(row=>{
+      if(!sessionsMap[row.session_id])return;
+      const sess=sessionsMap[row.session_id];
+      sess.matches.push({
+        matchId:row.id,matchNum:row.match_num,
+        teamA:Array.isArray(row.team_a)?row.team_a:(typeof row.team_a==='string'?JSON.parse(row.team_a):row.team_a||[]),
+        teamB:Array.isArray(row.team_b)?row.team_b:(typeof row.team_b==='string'?JSON.parse(row.team_b):row.team_b||[]),
+        winner:row.winner,bet:row.bet,
+        payments:Array.isArray(row.payments)?row.payments:(typeof row.payments==='string'?JSON.parse(row.payments):row.payments||[]),
+        date:sess.date,players:sess.players
+      });
+    });
+    data.sessions=Object.values(sessionsMap).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+
+    // Restore active session if it was today
+    if(sessRows&&sessRows.length>0){
+      const latest=sessRows[0];
+      if(latest.current_state){
+        const cs=typeof latest.current_state==='string'?JSON.parse(latest.current_state):latest.current_state;
+        if(cs&&cs.date===today()){
+          data.currentSession=cs;
+          data.players=Array.isArray(latest.players)?latest.players:(typeof latest.players==='string'?JSON.parse(latest.players):latest.players||[]);
+        }
+      }
+    }
+    saveLocal();
+  }catch(e){console.warn('DB load failed, using local cache:',e);}
+  showLoadingOverlay(false);
+  renderAfterLoad();
+}
+
+function showLoadingOverlay(show){
+  let el=document.getElementById('db-loading');
+  if(!el&&show){
+    el=document.createElement('div');el.id='db-loading';
+    el.style.cssText='position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:12px';
+    el.innerHTML='<div style="font-size:2.5rem">🏸</div><div style="font-size:.9rem;color:var(--muted);font-family:\'DM Sans\',sans-serif">Loading sessions…</div>';
+    document.body.appendChild(el);
+  }
+  if(el)el.style.display=show?'flex':'none';
+}
+
+function renderAfterLoad(){
+  updateMeAvatar();
+  if(data.currentSession)showTab('match');else showTab('setup');
 }
 
 // ── REALTIME ──
@@ -567,7 +674,7 @@ function subscribeRealtime(code){
     renderMoneyTracker();
     const activePg=document.querySelector('.screen.active');
     if(activePg){
-      if(activePg.id==='tab-history') renderCalendar();
+      if(activePg.id==='tab-history') renderSessHistory();
       if(activePg.id==='tab-leaderboard') renderLeaderboard();
       if(activePg.id==='tab-timeline') renderTimeline();
       if(activePg.id==='tab-me') renderMyProfile();
@@ -586,15 +693,10 @@ async function pushState(){
   try{await db.from('live_sessions').upsert({code:liveCode,state:JSON.stringify(data.currentSession),players:JSON.stringify(data.players),sessions:JSON.stringify(data.sessions),tl:JSON.stringify(tlEvents),updated_at:new Date().toISOString()},{onConflict:'code'});}catch(e){}
 }
 
-async function pushMatchRecord(record){
-  if(!db) return;
-  try{await db.from('matches').insert({session_date:record.date,match_num:record.matchNum,team_a:JSON.stringify(record.teamA.map(i=>data.players[i]?.name)),team_b:JSON.stringify(record.teamB.map(i=>data.players[i]?.name)),winner:record.winner,bet:record.bet,payments:JSON.stringify(record.payments),players_snapshot:JSON.stringify(data.players)});}catch(e){}
-}
-
 // ── TIMELINE ──
-const TL_KEY='shuttle_squad_tl';
-let tlEvents=(()=>{try{const r=localStorage.getItem(TL_KEY);if(r)return JSON.parse(r);}catch(e){}return[];})();
-function saveTl(){try{localStorage.setItem(TL_KEY,JSON.stringify(tlEvents));}catch(e){}}
+let tlPaused=false;
+let tlEvents=[];
+function saveTl(){/* timeline is per-session, memory only */}
 function addEvent(type,title,sub=''){
   const now=new Date();
   const time=now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
@@ -604,6 +706,7 @@ function addEvent(type,title,sub=''){
 }
 function renderTimeline(){
   const cont=document.getElementById('timeline-content');if(!cont)return;
+  if(tlPaused){cont.innerHTML=`<div class="tl-empty" style="color:var(--muted)">⏸ Feed paused — press Resume to see events</div>`;return;}
   if(!tlEvents.length){cont.innerHTML='<div class="tl-empty">No events yet. Start a match!</div>';return;}
   const icons={win:'🏆',start:'▶️',pay:'💸',info:'📋',join:'🔗',next:'⏭️'};
   cont.innerHTML=tlEvents.map(e=>`
@@ -614,7 +717,94 @@ function renderTimeline(){
     </div>`).join('');
 }
 
-// ── SESSION CODE ──
+// ── TIMELINE TOGGLE ──
+function toggleTimeline(){
+  tlPaused=!tlPaused;
+  const btn=document.getElementById('tl-toggle-btn');
+  if(btn){btn.textContent=tlPaused?'▶ Resume':'⏸ Pause';btn.style.color=tlPaused?'var(--accent2)':'var(--muted)';}
+  renderTimeline();
+}
+
+// ════════════════════════════════════
+// SESSION HISTORY TAB
+// ════════════════════════════════════
+let _activeSessDate=null;
+function renderSessHistory(){
+  const list=document.getElementById('sess-history-list');
+  const detail=document.getElementById('sess-history-detail');
+  if(!list)return;
+  const sessions=data.sessions; // already sorted newest first by loadFromDB
+  if(!sessions.length){
+    list.innerHTML=`<div style="text-align:center;padding:48px 0;color:var(--muted)"><div style="font-size:2.5rem;margin-bottom:10px">🏸</div><div style="font-size:.88rem">No sessions yet.<br>Start playing to see history here.</div></div>`;
+    if(detail)detail.innerHTML='';return;
+  }
+  list.innerHTML=sessions.map(sess=>{
+    const d=formatDate(sess.date);
+    const mc=sess.matches?.length||0;
+    const sessId=sess.id||sess.date;
+    const isActive=_activeSessDate===sessId;
+    const sessionPlayers=sess.players||data.players;
+    const playerIdxs=new Set();
+    (sess.matches||[]).forEach(m=>{[...(m.teamA||[]),...(m.teamB||[])].forEach(i=>playerIdxs.add(i));});
+    const playerDots=[...playerIdxs].slice(0,8).map(i=>{const p=sessionPlayers[i];return p?`<div style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0"></div>`:''}).join('');
+    const timeStr=sess.startTime?` · ${sess.startTime}`:'';
+    return `<div onclick="showSessHistDetail('${sessId}')" style="background:var(--surface);border:1.5px solid ${isActive?'var(--accent2)':'var(--border)'};border-radius:14px;padding:13px 15px;margin-bottom:8px;cursor:pointer;transition:border-color .18s;user-select:none;-webkit-tap-highlight-color:transparent">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:1px;color:${isActive?'var(--accent2)':'var(--text)'}">${d}<span style="font-size:.7rem;color:var(--muted);font-family:'DM Sans',sans-serif">${timeStr}</span></div>
+        <div style="font-size:.72rem;color:var(--muted);background:var(--surface2);padding:2px 9px;border-radius:10px">${mc} match${mc!==1?'es':''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px">${playerDots}${playerIdxs.size>8?`<span style="font-size:.68rem;color:var(--muted)">+${playerIdxs.size-8}</span>`:''}</div>
+    </div>`;
+  }).join('');
+  if(_activeSessDate)_renderSessDetail(_activeSessDate);
+  else if(detail)detail.innerHTML='';
+}
+
+function showSessHistDetail(id){
+  if(_activeSessDate===id){_activeSessDate=null;document.getElementById('sess-history-detail').innerHTML='';renderSessHistory();return;}
+  _activeSessDate=id;renderSessHistory();_renderSessDetail(id);
+  setTimeout(()=>{const d=document.getElementById('sess-history-detail');if(d)d.scrollIntoView({behavior:'smooth',block:'start'});},80);
+}
+
+function _renderSessDetail(id){
+  const detail=document.getElementById('sess-history-detail');if(!detail)return;
+  const sess=data.sessions.find(s=>(s.id||s.date)===id);
+  if(!sess){detail.innerHTML='';return;}
+  const sessionPlayers=sess.players||data.players;
+  const stats={};
+  sessionPlayers.forEach((p,i)=>{stats[i]={name:p.name,color:p.color,wins:0,losses:0,earned:0};});
+  (sess.matches||[]).forEach(m=>{
+    const wi=m.winner==='A'?m.teamA:m.teamB;
+    const li=m.winner==='A'?m.teamB:m.teamA;
+    (wi||[]).forEach(i=>{if(stats[i]){stats[i].wins++;stats[i].earned+=m.bet/(wi.length||1);}});
+    (li||[]).forEach(i=>{if(stats[i]){stats[i].losses++;stats[i].earned-=m.bet/(li.length||1);}});
+  });
+  const played=Object.entries(stats).filter(([,s])=>s.wins>0||s.losses>0).sort((a,b)=>b[1].earned-a[1].earned);
+  const podium=played.slice(0,3);
+  const podiumOrder=podium.length>=3?[podium[1],podium[0],podium[2]]:podium.length===2?[podium[1],podium[0]]:podium;
+  const podiumSizes=['44px','56px','44px'];
+  const podiumMed=['🥈','🥇','🥉'];
+  let podHtml=`<div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:18px;padding-top:6px">`;
+  podiumOrder.forEach((entry,pi)=>{
+    if(!entry)return;const[,s]=entry;
+    const eFmt=s.earned>0?`+₹${Math.round(s.earned)}`:s.earned<0?`-₹${Math.abs(Math.round(s.earned))}`:'₹0';
+    const eCls=s.earned>0?'var(--green)':s.earned<0?'var(--red)':'var(--muted)';
+    podHtml+=`<div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="font-size:.8rem">${podiumMed[pi]}</div><div style="width:${podiumSizes[pi]};height:${podiumSizes[pi]};border-radius:50%;background:${s.color};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:${pi===1?'1.1rem':'0.9rem'};color:#fff">${s.name[0]}</div><div style="font-size:.72rem;font-weight:700;text-align:center;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</div><div style="font-size:.72rem;font-weight:700;color:${eCls}">${eFmt}</div><div style="font-size:.62rem;color:var(--muted)">${s.wins}W·${s.losses}L</div></div>`;
+  });
+  podHtml+='</div>';
+  const rankRows=played.map(([,s],rank)=>{
+    const eFmt=s.earned>0?`+₹${Math.round(s.earned)}`:s.earned<0?`-₹${Math.abs(Math.round(s.earned))}`:'₹0';
+    const eCls=s.earned>0?'var(--green)':s.earned<0?'var(--red)':'var(--muted)';
+    const medal=rank===0?'🥇':rank===1?'🥈':rank===2?'🥉':`#${rank+1}`;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><div style="width:22px;text-align:center;font-size:.85rem">${medal}</div><div style="width:26px;height:26px;border-radius:50%;background:${s.color};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.72rem;color:#fff;flex-shrink:0">${s.name[0]}</div><div style="flex:1;font-weight:600;font-size:.85rem">${s.name}</div><div style="font-size:.72rem;color:var(--muted)">${s.wins}W·${s.losses}L</div><div style="font-weight:700;font-size:.88rem;color:${eCls}">${eFmt}</div></div>`;
+  }).join('');
+  const matchRows=(sess.matches||[]).map(m=>{
+    const wt=(m.winner==='A'?m.teamA:m.teamB).map(i=>sessionPlayers[i]?.name||`P${i}`);
+    const lt=(m.winner==='A'?m.teamB:m.teamA).map(i=>sessionPlayers[i]?.name||`P${i}`);
+    return `<div style="background:var(--surface2);border-radius:10px;padding:9px 12px;margin-bottom:6px;font-size:.82rem"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="color:var(--muted);font-size:.7rem">Match ${m.matchNum}</span><span style="color:var(--accent2);font-size:.7rem">₹${m.bet}</span></div><span style="color:var(--green);font-weight:600">🏆 ${wt.join(' & ')}</span><span style="color:var(--muted)"> beat ${lt.join(' & ')}</span></div>`;
+  }).join('');
+  detail.innerHTML=`<div class="card" style="margin-top:8px;margin-bottom:16px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div><div style="font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:1px;color:var(--accent2)">${formatDate(sess.date)}</div>${sess.startTime?`<div style="font-size:.7rem;color:var(--muted)">${sess.startTime} · ${(sess.matches||[]).length} matches</div>`:''}</div><button onclick="_activeSessDate=null;document.getElementById('sess-history-detail').innerHTML='';renderSessHistory()" style="background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:2px 6px">✕</button></div>${played.length?podHtml:''}${played.length?`<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">Full Rankings</div>${rankRows}<div style="height:2px"></div>`:''}<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:14px 0 8px">Matches</div>${matchRows||'<div style="color:var(--muted);font-size:.82rem">No matches recorded</div>'}</div>`;
+}
 function generateCode(){return 'SS-'+Math.floor(1000+Math.random()*9000);}
 function updateSessionPillUI(){
   const pill=document.getElementById('session-pill');
@@ -676,7 +866,7 @@ function showTab(tab){
   const btns=document.querySelectorAll('.nav-btn');
   if(ni>=0&&btns[ni])btns[ni].classList.add('active');
   if(tab==='match')renderMatchTab();
-  if(tab==='history')renderCalendar();
+  if(tab==='history')renderSessHistory();
   if(tab==='leaderboard')renderLeaderboard();
   if(tab==='timeline')renderTimeline();
   if(tab==='me')renderMyProfile();
@@ -707,6 +897,29 @@ function startSession(){
     const name=document.getElementById(`pn-${i}`)?.value.trim()||`P${i+1}`;
     data.players.push({name,color:COLORS[i]});
   }
+  // Show team formation choice modal — only once at session start
+  showTeamFormationModal();
+}
+
+function showTeamFormationModal(){
+  const title='Team Formation';
+  const body=`<div style="font-size:.86rem;color:var(--muted);line-height:1.6;margin-bottom:16px">How would you like to form teams for this session?</div>
+  <div style="display:flex;gap:10px">
+    <button onclick="confirmAutoTeams()" style="flex:1;padding:14px 0;border-radius:12px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:border-color .18s" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)'">
+      🔀<br><span style="font-size:.75rem;color:var(--muted);font-weight:400">Auto shuffle</span>
+    </button>
+    <button onclick="showManualTeamModal()" style="flex:1;padding:14px 0;border-radius:12px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:border-color .18s" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)'">
+      ✏️<br><span style="font-size:.75rem;color:var(--muted);font-weight:400">Pick manually</span>
+    </button>
+  </div>`;
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=`<div>${body}</div>`;
+  document.getElementById('modal-btns').innerHTML='';
+  document.getElementById('overlay').classList.add('open');
+}
+
+function confirmAutoTeams(){
+  const n=data.players.length;
   const isEven=(n%2===0);
   const sh=shuffle(data.players.map((_,i)=>i));
   let teamA,teamB,bench=[],waitingTeams=[];
@@ -717,19 +930,225 @@ function startSession(){
   } else {
     teamA=[sh[0],sh[1]];teamB=[sh[2],sh[3]];bench=sh.slice(4);
   }
+  _finaliseSession({teamA,teamB,bench,waitingTeams,isEven,manualTeams:false});
+}
+
+// ── MANUAL TEAM FORMATION ──
+// Team colours for labels A/B/C/D...
+const TEAM_LETTERS='ABCDEFGH';
+const TEAM_LABEL_COLORS=['#6BCB77','#4D96FF','#FFD93D','#FF6B6B','#CC5DE8','#FF922B','#20C997','#F06595'];
+
+let _manualAssign={};   // playerIdx → teamLetter | '' (bench/singles)
+let _manualTeamSize=2;  // 2 for doubles, 1 for singles (2 players)
+let _manualTeams={};    // built teams: {A:[idx,...], B:[...], ...}
+let _startingPick=[];   // [letterX, letterY] chosen to play first
+
+function showManualTeamModal(){
+  _manualAssign={};
+  data.players.forEach((_,i)=>{ _manualAssign[i]=''; });
+  _manualTeamSize = data.players.length===2 ? 1 : 2; // singles only for 2 players
+  _renderManualModal();
+}
+
+function _teamCount(){
+  // How many full teams can we form?
+  const n=data.players.length;
+  if(_manualTeamSize===1) return n; // every player is a team
+  return Math.floor(n/_manualTeamSize);
+}
+
+function _renderManualModal(){
+  const n=data.players.length;
+  const ts=_manualTeamSize;
+  const numTeams=_teamCount();
+
+  // Count assignments per letter
+  const counts={};
+  TEAM_LETTERS.slice(0,numTeams).split('').forEach(l=>{ counts[l]=0; });
+  Object.values(_manualAssign).forEach(v=>{ if(v&&counts[v]!==undefined) counts[v]++; });
+
+  // Is every team full?
+  const allFull=Object.values(counts).every(c=>c===ts);
+  // For odd: one player can be bench (unassigned)
+  const isOddSession=(n%2!==0);
+  const assignedCount=Object.values(_manualAssign).filter(v=>v!=='').length;
+  const benchCount=n-assignedCount;
+  const maxBench=isOddSession?1:0;
+  const ready=allFull||(isOddSession&&benchCount===maxBench&&Object.values(counts).filter(c=>c===ts).length>=2);
+
+  // Build legend chips for teams
+  let legend=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px;font-size:.74rem">`;
+  TEAM_LETTERS.slice(0,numTeams).split('').forEach((l,li)=>{
+    legend+=`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;background:${TEAM_LABEL_COLORS[li]}22;border:1px solid ${TEAM_LABEL_COLORS[li]};color:${TEAM_LABEL_COLORS[li]};font-weight:700">Team ${l} <span style="opacity:.7">${counts[l]}/${ts}</span></span>`;
+  });
+  if(isOddSession) legend+=`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted)">Bench ${benchCount}/${maxBench}</span>`;
+  legend+='</div>';
+
+  const hint=`<div style="font-size:.76rem;color:var(--muted);margin-bottom:10px">Tap a player to cycle through teams${isOddSession?' — 1 player stays benched':''}. Fill ${ts} per team.</div>`;
+
+  let chips='';
+  data.players.forEach((p,i)=>{
+    const asgn=_manualAssign[i];
+    const li=TEAM_LETTERS.indexOf(asgn);
+    const col=li>=0?TEAM_LABEL_COLORS[li]:'var(--muted)';
+    const bg=li>=0?`${TEAM_LABEL_COLORS[li]}1A`:'var(--surface2)';
+    const bdr=li>=0?TEAM_LABEL_COLORS[li]:'var(--border)';
+    chips+=`<div onclick="_cycleManual(${i})" style="display:flex;align-items:center;gap:9px;padding:10px 13px;border-radius:11px;border:1.5px solid ${bdr};background:${bg};cursor:pointer;margin-bottom:7px;transition:all .15s;user-select:none;-webkit-tap-highlight-color:transparent">
+      <div style="width:10px;height:10px;border-radius:50%;background:${p.color};flex-shrink:0"></div>
+      <span style="flex:1;font-weight:600;font-size:.87rem">${p.name}</span>
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:1px;color:${col}">${asgn||'—'}</span>
+    </div>`;
+  });
+
+  document.getElementById('modal-title').textContent='Pick Teams';
+  document.getElementById('modal-body').innerHTML=`<div style="max-height:55vh;overflow-y:auto">${hint}${legend}${chips}</div>`;
+  const bc=document.getElementById('modal-btns');bc.innerHTML='';
+
+  const btnBack=document.createElement('button');btnBack.className='btn btn-secondary';btnBack.textContent='← Back';btnBack.onclick=showTeamFormationModal;bc.appendChild(btnBack);
+  const btnOk=document.createElement('button');btnOk.className='btn btn-primary';btnOk.textContent='Next →';
+  btnOk.disabled=!ready;btnOk.style.opacity=ready?'1':'0.4';
+  btnOk.onclick=ready?_confirmManualTeamsPickStart:null;
+  bc.appendChild(btnOk);
+  document.getElementById('overlay').classList.add('open');
+}
+
+function _cycleManual(i){
+  const n=data.players.length;
+  const ts=_manualTeamSize;
+  const numTeams=_teamCount();
+  const isOdd=(n%2!==0);
+  const letters=TEAM_LETTERS.slice(0,numTeams).split('');
+  const cur=_manualAssign[i];
+
+  // Count current per team
+  const counts={};
+  letters.forEach(l=>{ counts[l]=Object.values(_manualAssign).filter(v=>v===l).length; });
+  const benchCount=Object.values(_manualAssign).filter(v=>v==='').length;
+
+  if(cur===''){
+    // Assign to first team with space
+    const next=letters.find(l=>counts[l]<ts);
+    if(next) _manualAssign[i]=next;
+    // else all full, stays bench (valid for odd session)
+  } else {
+    const idx=letters.indexOf(cur);
+    // Find next team with space, or wrap to bench
+    let found=false;
+    for(let k=idx+1;k<letters.length;k++){
+      if(counts[letters[k]]<ts){_manualAssign[i]=letters[k];found=true;break;}
+    }
+    if(!found){
+      // Only allow bench if odd session AND bench not yet full
+      if(isOdd&&benchCount<1) _manualAssign[i]='';
+      else {
+        // Wrap back to first team with space
+        const wrap=letters.find(l=>{ const c=Object.values(_manualAssign).filter(v=>v===l).length; return l!==cur&&c<ts;});
+        if(wrap) _manualAssign[i]=wrap; else _manualAssign[i]='';
+      }
+    }
+  }
+  _renderManualModal();
+}
+
+function _confirmManualTeamsPickStart(){
+  const numTeams=_teamCount();
+  const letters=TEAM_LETTERS.slice(0,numTeams).split('');
+  // Build teams map
+  _manualTeams={};
+  letters.forEach(l=>{ _manualTeams[l]=Object.entries(_manualAssign).filter(([,v])=>v===l).map(([k])=>parseInt(k)); });
+  const benchPlayers=Object.entries(_manualAssign).filter(([,v])=>v==='').map(([k])=>parseInt(k));
+  _manualTeams['_bench']=benchPlayers;
+
+  if(numTeams===2){
+    // Only 2 teams — no need to pick, just start
+    _startingPick=['A','B'];
+    _finaliseManualSession();
+    return;
+  }
+
+  // Ask which 2 teams play first
+  _startingPick=[];
+  _renderStartPickModal(letters);
+}
+
+function _renderStartPickModal(letters){
+  let html=`<div style="font-size:.82rem;color:var(--muted);margin-bottom:13px">Pick 2 teams to play the first match. The rest wait on bench.</div><div style="display:flex;flex-direction:column;gap:8px">`;
+  letters.forEach((l,li)=>{
+    const players=_manualTeams[l]||[];
+    const names=players.map(i=>data.players[i]?.name).join(' & ');
+    const sel=_startingPick.includes(l);
+    const col=TEAM_LABEL_COLORS[li];
+    html+=`<div onclick="_toggleStartPick('${l}')" style="display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:11px;border:1.5px solid ${sel?col:'var(--border)'};background:${sel?col+'1A':'var(--surface2)'};cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:all .15s">
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:${col};width:22px">Team ${l}</span>
+      <span style="flex:1;font-size:.84rem;font-weight:600">${names}</span>
+      <span style="font-size:1rem">${sel?'✓':''}</span>
+    </div>`;
+  });
+  html+='</div>';
+
+  document.getElementById('modal-title').textContent='Who Plays First?';
+  document.getElementById('modal-body').innerHTML=html;
+  const bc=document.getElementById('modal-btns');bc.innerHTML='';
+  const btnBack=document.createElement('button');btnBack.className='btn btn-secondary';btnBack.textContent='← Back';btnBack.onclick=()=>_renderManualModal();bc.appendChild(btnBack);
+  const btnOk=document.createElement('button');btnOk.className='btn btn-primary';btnOk.textContent='Start Session 🏸';
+  const ready=_startingPick.length===2;
+  btnOk.disabled=!ready;btnOk.style.opacity=ready?'1':'0.4';
+  btnOk.onclick=ready?_finaliseManualSession:null;
+  bc.appendChild(btnOk);
+}
+
+function _toggleStartPick(l){
+  if(_startingPick.includes(l)){ _startingPick=_startingPick.filter(x=>x!==l); }
+  else if(_startingPick.length<2){ _startingPick.push(l); }
+  const numTeams=_teamCount();
+  _renderStartPickModal(TEAM_LETTERS.slice(0,numTeams).split(''));
+}
+
+function _finaliseManualSession(){
+  const n=data.players.length;
+  const isEven=(n%2===0);
+  const [firstL,secondL]=_startingPick;
+  const teamA=_manualTeams[firstL]||[];
+  const teamB=_manualTeams[secondL]||[];
+  const benchPlayers=_manualTeams['_bench']||[];
+
+  // All other named teams (not playing first, not bench individuals) go to waitingTeams queue
+  const numTeams=_teamCount();
+  const letters=TEAM_LETTERS.slice(0,numTeams).split('');
+  const waitingTeams=letters.filter(l=>l!==firstL&&l!==secondL).map(l=>_manualTeams[l]);
+
+  // Bench = individual bench players (odd session) + no extra for even manual (waitingTeams handles queue)
+  const bench=isEven?[...benchPlayers]:[...benchPlayers];
+
+  _finaliseSession({teamA,teamB,bench,waitingTeams,isEven,manualTeams:true});
+}
+
+function _finaliseSession({teamA,teamB,bench,waitingTeams,isEven,manualTeams}){
+  const sessionId=genUUID();
+  const startTime=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
   data.currentSession={
-    date:today(),matchNum:1,isEven,teamA,teamB,bench,waitingTeams,
+    sessionId,
+    date:today(),startTime,matchNum:1,isEven,teamA,teamB,bench,waitingTeams,
     state:'setup',bet:50,winner:null,payments:[],payAssign:null,history:[],
-    sessionTxns:[] // ← per-transaction money tracker
+    sessionTxns:[],
+    manualTeams:manualTeams
   };
   isHost=true;isViewer=false;
   updateMeAvatar();
+  tlEvents=[];saveTl();
+  closeModal();
   save();showTab('match');showToast('Session started! 🏸');
 }
 
 function confirmReset(){
-  showModal('Reset All Data?','This clears all local players, sessions and history.',[
-    {label:'Reset',cls:'btn btn-danger',fn:()=>{data={players:[],sessions:[],currentSession:null};save();closeModal();showTab('match');showToast('Cleared');}},
+  showModal('Reset All Data?','This clears all local players, sessions and history — including the database.',[
+    {label:'Reset',cls:'btn btn-danger',fn:async()=>{
+      if(db){
+        try{await db.from('matches').delete().neq('id','00000000-0000-0000-0000-000000000000');}catch(e){}
+        try{await db.from('sessions').delete().neq('id','00000000-0000-0000-0000-000000000000');}catch(e){}
+      }
+      data={players:[],sessions:[],currentSession:null};saveLocal();closeModal();showTab('match');showToast('Cleared');
+    }},
     {label:'Cancel',cls:'btn btn-secondary',fn:closeModal}
   ]);
 }
@@ -746,7 +1165,7 @@ function renderMatchTab(){
   document.getElementById('viewer-info').style.display=isViewer?'block':'none';
   renderPlayersBar();renderTeamsContainer();renderBenchOrQueue();renderStateUI();renderSessHist();renderMoneyTracker();
   const reteamBtn=document.getElementById('reteam-btn');
-  reteamBtn.style.display=(!isViewer&&!cs.isEven&&cs.history.length===0&&cs.state==='setup')?'inline-flex':'none';
+  reteamBtn.style.display=(!isViewer&&!cs.isEven&&!cs.manualTeams&&cs.history.length===0&&cs.state==='setup')?'inline-flex':'none';
   document.getElementById('bet-input').style.display=isViewer?'none':'block';
   document.getElementById('start-btn').style.display=isViewer?'none':'block';
 }
@@ -789,7 +1208,9 @@ function renderBenchOrQueue(){
   const cs=data.currentSession;
   const benchSec=document.getElementById('bench-section');
   const nextSec=document.getElementById('next-up-section');
-  if(cs.isEven){
+  const isManualEven=cs.manualTeams&&(data.players.length%2===0);
+
+  if(cs.isEven||isManualEven){
     benchSec.style.display='none';
     const waiting=cs.waitingTeams||[];
     if(!waiting.length){nextSec.style.display='none';return;}
@@ -1145,17 +1566,24 @@ async function declareWinner(team){
   if(isViewer)return;
   const cs=data.currentSession;
   cs.winner=team;cs.state='result';cs.payAssign=null;cs.payments=[];
-  const record={matchNum:cs.matchNum,teamA:[...cs.teamA],teamB:[...cs.teamB],winner:team,bet:cs.bet,payments:[],date:cs.date};
+  const record={
+    matchId:genUUID(),
+    matchNum:cs.matchNum,teamA:[...cs.teamA],teamB:[...cs.teamB],
+    winner:team,bet:cs.bet,payments:[],date:cs.date
+  };
   cs.history.push(record);
-  let sess=data.sessions.find(s=>s.date===cs.date);
-  if(!sess){sess={date:cs.date,matches:[],startTime:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})};data.sessions.push(sess);}
-  sess.matches.push(record);
+  // Also keep in data.sessions for leaderboard (local structure)
+  let sess=data.sessions.find(s=>s.id===cs.sessionId);
+  if(!sess){
+    sess={id:cs.sessionId,date:cs.date,startTime:cs.startTime,createdAt:new Date().toISOString(),players:[...data.players],isEven:cs.isEven,manualTeams:cs.manualTeams||false,matches:[]};
+    data.sessions.unshift(sess);
+  }
+  sess.matches.push({...record,players:[...data.players]});
   const winNames=(team==='A'?cs.teamA:cs.teamB).map(i=>data.players[i]?.name).join(' & ');
   const loseNames=(team==='A'?cs.teamB:cs.teamA).map(i=>data.players[i]?.name).join(' & ');
   addEvent('win',`${winNames} won Match ${cs.matchNum}!`,`Beat ${loseNames} · ₹${cs.bet}`);
   save();renderMatchTab();
   if(liveCode)await pushState();
-  await pushMatchRecord(record);
 }
 
 function nextMatch(){
@@ -1163,7 +1591,36 @@ function nextMatch(){
   const cs=data.currentSession;
   const winIdx=cs.winner==='A'?cs.teamA:cs.teamB;
   const loseIdx=cs.winner==='A'?cs.teamB:cs.teamA;
-  if(cs.isEven){
+
+  if(cs.manualTeams){
+    const isEven=(data.players.length%2===0);
+    if(isEven){
+      // Even manual: winner stays, loser goes to back of waitingTeams queue, next team from front challenges
+      const queue=[...(cs.waitingTeams||[])];
+      if(queue.length>0){
+        const challenger=queue.shift();      // next team from bench
+        queue.push([...loseIdx]);            // losers go to back of queue
+        cs.teamA=[...winIdx];
+        cs.teamB=[...challenger];
+        cs.waitingTeams=queue;
+      } else {
+        // Only 2 teams (no queue) — flip like normal
+        cs.teamA=[...winIdx];cs.teamB=[...loseIdx];cs.waitingTeams=[];
+      }
+      cs.bench=[];
+    } else {
+      // Odd manual: winner stays, randomly kick 1 from losers, surviving loser + bench player form new team
+      const kicked=loseIdx[Math.floor(Math.random()*loseIdx.length)];
+      const surviving=loseIdx.filter(i=>i!==kicked);
+      const benchPl=cs.bench||[];
+      const newTeamB=[...surviving,...benchPl].slice(0,loseIdx.length); // same size as loser team
+      const newBench=[kicked,...benchPl.slice(loseIdx.length-surviving.length)];
+      cs.teamA=[...winIdx];
+      cs.teamB=newTeamB;
+      cs.bench=newBench;
+      cs.waitingTeams=[];
+    }
+  } else if(cs.isEven){
     const queue=[...(cs.waitingTeams||[])];
     if(queue.length>0){const challenger=queue.shift();queue.push([...loseIdx]);cs.teamA=[...winIdx];cs.teamB=[...challenger];cs.waitingTeams=queue;}
     else{cs.teamA=[...winIdx];cs.teamB=[...loseIdx];cs.waitingTeams=[];}
@@ -1173,7 +1630,6 @@ function nextMatch(){
     cs.teamA=[...winIdx];cs.teamB=[...cs.bench,...sl.slice(0,slots)].slice(0,2);cs.bench=sl.slice(slots);
   }
   cs.matchNum++;cs.state='setup';cs.winner=null;cs.payments=[];cs.payAssign=null;
-  // sessionTxns is NOT touched here — it's the permanent log, never cleared
   const nA=cs.teamA.map(i=>data.players[i]?.name).join(' & ');
   const nB=cs.teamB.map(i=>data.players[i]?.name).join(' & ');
   addEvent('next',`Match ${cs.matchNum} up next`,`${nA} vs ${nB}`);
@@ -1379,19 +1835,25 @@ function filterSessionsByPeriod(period){
 }
 
 function buildStats(sessions){
-  const stats={};
-  data.players.forEach((p,i)=>{stats[i]={name:p.name,color:p.color,wins:0,losses:0,earned:0,streak:0,maxStreak:0,played:0,history:[]};});
-  sessions.forEach(sess=>sess.matches.forEach(m=>{
-    const wi=m.winner==='A'?m.teamA:m.teamB;
-    const li=m.winner==='A'?m.teamB:m.teamA;
-    wi.forEach(i=>{if(stats[i]){stats[i].wins++;stats[i].played++;stats[i].earned+=m.bet/wi.length;stats[i].history.push({result:'W',earned:m.bet/wi.length,matchNum:m.matchNum,date:m.date});}});
-    li.forEach(i=>{if(stats[i]){stats[i].losses++;stats[i].played++;stats[i].earned-=m.bet/li.length;stats[i].history.push({result:'L',earned:-m.bet/li.length,matchNum:m.matchNum,date:m.date});}});
-  }));
-  Object.values(stats).forEach(s=>{
-    let cur=0,max=0;
-    s.history.forEach(h=>{if(h.result==='W'){cur++;max=Math.max(max,cur);}else cur=0;});
-    s.streak=cur;s.maxStreak=max;
+  // Build a merged player list across all sessions by name
+  const byName={};
+  sessions.forEach(sess=>{
+    const sessionPlayers=sess.players||data.players;
+    sessionPlayers.forEach((p,i)=>{
+      if(!byName[p.name])byName[p.name]={name:p.name,color:p.color,wins:0,losses:0,earned:0,streak:0,maxStreak:0,played:0,history:[]};
+    });
+    (sess.matches||[]).forEach(m=>{
+      const sp=m.players||sess.players||data.players;
+      const wi=(m.winner==='A'?m.teamA:m.teamB)||[];
+      const li=(m.winner==='A'?m.teamB:m.teamA)||[];
+      wi.forEach(i=>{const p=sp[i];if(!p)return;if(!byName[p.name])byName[p.name]={name:p.name,color:p.color,wins:0,losses:0,earned:0,streak:0,maxStreak:0,played:0,history:[]};const s=byName[p.name];s.wins++;s.played++;s.earned+=m.bet/(wi.length||1);s.history.push({result:'W',earned:m.bet/(wi.length||1)});});
+      li.forEach(i=>{const p=sp[i];if(!p)return;if(!byName[p.name])byName[p.name]={name:p.name,color:p.color,wins:0,losses:0,earned:0,streak:0,maxStreak:0,played:0,history:[]};const s=byName[p.name];s.losses++;s.played++;s.earned-=m.bet/(li.length||1);s.history.push({result:'L',earned:-m.bet/(li.length||1)});});
+    });
   });
+  Object.values(byName).forEach(s=>{let cur=0,max=0;s.history.forEach(h=>{if(h.result==='W'){cur++;max=Math.max(max,cur);}else cur=0;});s.streak=cur;s.maxStreak=max;});
+  // Re-index by position for leaderboard compat
+  const stats={};
+  Object.values(byName).forEach((s,i)=>{stats[i]=s;});
   return stats;
 }
 
@@ -1628,20 +2090,26 @@ function closeModal(){document.getElementById('overlay').classList.remove('open'
 document.getElementById('overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeModal();});
 
 // ── INIT ──
-initDb();
-if(liveCode&&db){
-  subscribeRealtime(liveCode);updateSessionPillUI();
-  if(isViewer){
-    db.from('live_sessions').select('*').eq('code',liveCode).single().then(({data:rows})=>{
-      if(rows){
-        const st=JSON.parse(rows.state||'null');
-        if(st){data.currentSession=st;data.players=JSON.parse(rows.players||'[]');data.sessions=JSON.parse(rows.sessions||'[]');tlEvents=JSON.parse(rows.tl||'[]');saveTl();save();renderMatchTab();}
-      }
-    }).catch(()=>{});
+(async function init(){
+  initDb();
+  if(liveCode&&db){
+    subscribeRealtime(liveCode);updateSessionPillUI();
+    if(isViewer){
+      try{
+        const{data:rows}=await db.from('live_sessions').select('*').eq('code',liveCode).single();
+        if(rows){
+          const st=typeof rows.state==='string'?JSON.parse(rows.state||'null'):rows.state;
+          if(st){
+            data.currentSession=st;
+            data.players=typeof rows.players==='string'?JSON.parse(rows.players||'[]'):rows.players||[];
+            saveLocal();
+          }
+        }
+      }catch(e){}
+    }
   }
-}
-updateMeAvatar();
-if(data.currentSession)showTab('match');else showTab('setup');
+  loadFromDB();
+})();
 </script>
 </body>
 </html>
